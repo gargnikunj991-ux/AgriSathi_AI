@@ -1,0 +1,24 @@
+# Target build directory
+target/
+*.class
+
+# Maven
+.mvn/
+mvnw
+mvnw.cmd
+
+# IDE settings
+.idea/
+*.iml
+*.ipr
+*.iws
+.classpath
+.project
+.settings/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Log files
+*.log
