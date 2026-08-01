@@ -1,5 +1,6 @@
 package com.agrisathi.api.dto.request;
 
+import com.agrisathi.api.model.enums.CropStatus;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
@@ -18,4 +19,7 @@ public class CropRequest {
     private LocalDate sowingDate;
 
     private LocalDate harvestDate;
+
+    private CropStatus status;
 }
+

@@ -2,7 +2,7 @@ package com.agrisathi.api.controller;
 
 import com.agrisathi.api.dto.request.CropRequest;
 import com.agrisathi.api.dto.response.ApiResponse;
-import com.agrisathi.api.model.entity.Crop;
+import com.agrisathi.api.dto.response.CropResponse;
 import com.agrisathi.api.security.UserPrincipal;
 import com.agrisathi.api.service.CropService;
 import jakarta.validation.Valid;
@@ -22,24 +22,25 @@ public class CropController {
     private final CropService cropService;
 
     @GetMapping
-    public ResponseEntity<ApiResponse<List<Crop>>> getAllCrops(@AuthenticationPrincipal UserPrincipal currentUser) {
-        List<Crop> crops = cropService.getCropsByUserId(currentUser.getId());
+    public ResponseEntity<ApiResponse<List<CropResponse>>> getAllCrops(
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        List<CropResponse> crops = cropService.getCropsByUserId(currentUser.getId());
         return ResponseEntity.ok(ApiResponse.success("Crops retrieved successfully", crops));
     }
 
     @GetMapping("/{cropId}")
-    public ResponseEntity<ApiResponse<Crop>> getCropById(
+    public ResponseEntity<ApiResponse<CropResponse>> getCropById(
             @PathVariable Long cropId,
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        Crop crop = cropService.getCropByIdAndUserId(cropId, currentUser.getId());
+        CropResponse crop = cropService.getCropByIdAndUserId(cropId, currentUser.getId());
         return ResponseEntity.ok(ApiResponse.success("Crop details retrieved successfully", crop));
     }
 
     @PostMapping
-    public ResponseEntity<ApiResponse<Crop>> addCrop(
+    public ResponseEntity<ApiResponse<CropResponse>> addCrop(
             @AuthenticationPrincipal UserPrincipal currentUser,
             @Valid @RequestBody CropRequest request) {
-        Crop createdCrop = cropService.addCrop(currentUser.getId(), request);
+        CropResponse createdCrop = cropService.addCrop(currentUser.getId(), request);
         return new ResponseEntity<>(
                 ApiResponse.success("Crop added successfully", createdCrop),
                 HttpStatus.CREATED
@@ -47,11 +48,11 @@ public class CropController {
     }
 
     @PutMapping("/{cropId}")
-    public ResponseEntity<ApiResponse<Crop>> updateCrop(
+    public ResponseEntity<ApiResponse<CropResponse>> updateCrop(
             @PathVariable Long cropId,
             @AuthenticationPrincipal UserPrincipal currentUser,
             @Valid @RequestBody CropRequest request) {
-        Crop updatedCrop = cropService.updateCrop(cropId, currentUser.getId(), request);
+        CropResponse updatedCrop = cropService.updateCrop(cropId, currentUser.getId(), request);
         return ResponseEntity.ok(ApiResponse.success("Crop updated successfully", updatedCrop));
     }
 
