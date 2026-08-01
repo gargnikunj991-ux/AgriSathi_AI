@@ -1,24 +1,56 @@
-# Target build directory
+# =========================
+# Build
+# =========================
 target/
 *.class
 
-# Maven
-.mvn/
-mvnw
-mvnw.cmd
+# =========================
+# Maven Wrapper
+# =========================
+.mvn/wrapper/maven-wrapper.jar
 
-# IDE settings
+# Keep these files (DO NOT ignore them)
+#!mvnw
+#!mvnw.cmd
+
+# =========================
+# IDE
+# =========================
 .idea/
 *.iml
-*.ipr
-*.iws
+.vscode/
+
+# Eclipse
 .classpath
 .project
 .settings/
 
-# OS metadata
+# NetBeans
+/nbproject/private/
+/build/
+/nbbuild/
+/dist/
+/nbdist/
+
+# =========================
+# OS Files
+# =========================
 .DS_Store
 Thumbs.db
 
-# Log files
+# =========================
+# Logs
+# =========================
 *.log
+
+# =========================
+# Environment Variables
+# =========================
+.env
+.env.*
+
+# =========================
+# Application Secrets
+# =========================
+application-local.properties
+application-local.yml
