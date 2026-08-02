@@ -5,10 +5,15 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
 public class ChatResponse {
+    private Long id;
+    private String prompt;
     private String response;
+    private LocalDateTime timestamp;
 }

@@ -10,7 +10,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 
 ### ✨ Added
 - **Core Architecture**:
-  - Initialized Spring Boot 3.x backend application on Java 17 LTS.
+  - Initialized Spring Boot 3.x backend application on Java 21 LTS.
   - Implemented Layered Enterprise Architecture (Controller, Service, Repository, Entity, DTO).
   - Configured PostgreSQL / MySQL relational database persistence with Spring Data JPA.
 - **Authentication & Security**:

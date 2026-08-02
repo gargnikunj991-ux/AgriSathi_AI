@@ -39,7 +39,7 @@ AgriSathi AI aims to become the definitive digital agricultural companion for mi
 ## 🚀 Detailed Phase Breakdown
 
 ### Phase 1: V1.0 Core Backend Launch (Completed - Q3 2026) ✅
-- [x] RESTful API architecture with Spring Boot 3.x and Java 17.
+- [x] RESTful API architecture with Spring Boot 3.x and Java 21.
 - [x] JWT authentication and secure user access management.
 - [x] Farmer profile metadata management and crop tracking.
 - [x] Cloud image upload integration (Cloudinary) for crop disease scans.

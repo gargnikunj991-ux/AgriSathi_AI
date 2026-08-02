@@ -1,7 +1,7 @@
 # 🌾 AgriSathi AI — Smart Agricultural Intelligence & Decision Support System
 
 [![Build Status](https://img.shields.io/badge/Build-Passing-brightgreen.svg)](https://github.com/gargnikunj991-ux/AgriSathi_AI)
-[![Java Version](https://img.shields.io/badge/Java-17%2B-orange.svg)](https://www.oracle.com/java/)
+[![Java Version](https://img.shields.io/badge/Java-21%2B-orange.svg)](https://www.oracle.com/java/)
 [![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-green.svg)](https://spring.io/projects/spring-boot)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
@@ -32,7 +32,7 @@ By integrating modern artificial intelligence, satellite/weather intelligence, a
 
 | Layer | Technology / Framework |
 | :--- | :--- |
-| **Language & Runtime** | Java 17 LTS |
+| **Language & Runtime** | Java 21 LTS |
 | **Framework** | Spring Boot 3.x (Spring Web, Spring Security, Spring Data JPA) |
 | **Database** | PostgreSQL 15+ / MySQL 8.0+ |
 | **Security & Auth** | JSON Web Tokens (JWT), BCrypt Hashing |
@@ -61,7 +61,7 @@ By integrating modern artificial intelligence, satellite/weather intelligence, a
 ## 🚀 Quick Start Guide
 
 ### Prerequisites
-- **JDK 17** or higher installed (`java -version`)
+- **JDK 21** or higher installed (`java -version`)
 - **Maven 3.8+** installed (`mvn -version`)
 - **PostgreSQL 15+** or **MySQL 8.0+** running instance
 

@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/api/v1/chat")
 @RequiredArgsConstructor
@@ -24,5 +26,12 @@ public class ChatController {
             @Valid @RequestBody ChatRequest request) {
         ChatResponse response = chatService.processChat(currentUser.getId(), request);
         return ResponseEntity.ok(ApiResponse.success("AI Chat response generated", response));
+    }
+
+    @GetMapping("/history")
+    public ResponseEntity<ApiResponse<List<ChatResponse>>> getChatHistory(
+            @AuthenticationPrincipal UserPrincipal currentUser) {
+        List<ChatResponse> history = chatService.getChatHistory(currentUser.getId());
+        return ResponseEntity.ok(ApiResponse.success("Chat history retrieved successfully", history));
     }
 }

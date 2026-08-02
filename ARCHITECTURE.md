@@ -2,7 +2,7 @@
 
 **Version:** 1.0  
 **Target Platform:** Cloud Native / On-Premise Microservice Ready  
-**Core Framework:** Spring Boot 3.x (Java 17 LTS)  
+**Core Framework:** Spring Boot 3.x (Java 21 LTS)  
 
 ---
 

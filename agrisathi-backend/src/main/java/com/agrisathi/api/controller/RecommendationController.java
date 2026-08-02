@@ -1,7 +1,9 @@
 package com.agrisathi.api.controller;
 
+import com.agrisathi.api.dto.request.CropAdviceRequest;
 import com.agrisathi.api.dto.request.FertilizerRecommendationRequest;
 import com.agrisathi.api.dto.response.ApiResponse;
+import com.agrisathi.api.dto.response.CropAdviceResponse;
 import com.agrisathi.api.dto.response.FertilizerRecommendationResponse;
 import com.agrisathi.api.service.RecommendationService;
 import jakarta.validation.Valid;
@@ -21,5 +23,12 @@ public class RecommendationController {
             @Valid @RequestBody FertilizerRecommendationRequest request) {
         FertilizerRecommendationResponse recommendation = recommendationService.recommendFertilizer(request);
         return ResponseEntity.ok(ApiResponse.success("Fertilizer recommendation retrieved successfully", recommendation));
+    }
+
+    @PostMapping("/crop-advice")
+    public ResponseEntity<ApiResponse<CropAdviceResponse>> getCropAdvice(
+            @Valid @RequestBody CropAdviceRequest request) {
+        CropAdviceResponse advice = recommendationService.recommendCropAdvice(request);
+        return ResponseEntity.ok(ApiResponse.success("Crop advice generated successfully", advice));
     }
 }

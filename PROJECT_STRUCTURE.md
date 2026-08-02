@@ -1,7 +1,7 @@
 # AgriSathi AI - Project Structure & Architectural Guidelines
 
 **Version:** 1.0  
-**Language / Framework:** Java 17+ / Spring Boot 3.x  
+**Language / Framework:** Java 21 LTS / Spring Boot 3.x  
 **Build Tool:** Maven / Gradle  
 **Architecture Pattern:** Layered Domain-Driven Architecture (Controller-Service-Repository)  
 

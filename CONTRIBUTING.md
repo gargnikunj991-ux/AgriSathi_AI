@@ -72,7 +72,7 @@ git commit -m "docs(api): update API contract for marketplace endpoint"
 
 ## 4. Java Coding Standards
 
-- **Java Version**: Write clean Java 17 code using modern features (records, switch expressions, var where appropriate).
+- **Java Version**: Write clean Java 21 code using modern features (records, switch expressions, var where appropriate).
 - **Lombok**: Use Lombok annotations (`@Data`, `@Getter`, `@Setter`, `@Builder`, `@RequiredArgsConstructor`) to reduce boilerplate code.
 - **REST Envelope**: All controller responses MUST wrap payloads inside `ApiResponse<T>`.
 - **Validation**: Validate incoming request body objects using `@Valid` and Jakarta constraints (`@NotBlank`, `@NotNull`, `@Size`).

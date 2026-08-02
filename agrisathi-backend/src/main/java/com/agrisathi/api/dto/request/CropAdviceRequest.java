@@ -10,13 +10,18 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class FertilizerRecommendationRequest {
+public class CropAdviceRequest {
 
-    @NotBlank(message = "Crop is required")
-    private String crop;
+    @NotBlank(message = "State is required")
+    private String state;
+
+    @NotBlank(message = "District is required")
+    private String district;
 
     @NotBlank(message = "Soil type is required")
     private String soilType;
 
-    private String disease;
+    private String season;
+    private Double farmSize;
+    private String waterAvailability;
 }
