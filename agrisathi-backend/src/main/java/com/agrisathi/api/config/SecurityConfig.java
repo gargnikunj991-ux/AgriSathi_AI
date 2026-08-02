@@ -63,7 +63,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login").permitAll()
                 // Public read APIs
                 .requestMatchers(HttpMethod.GET, "/api/v1/marketplace/listings", "/api/v1/marketplace/listings/**").permitAll()
+                .requestMatchers(HttpMethod.POST, "/api/v1/marketplace/listings/*/contact").permitAll()
                 .requestMatchers(HttpMethod.GET, "/api/v1/government-schemes").permitAll()
+                .requestMatchers(HttpMethod.GET, "/api/v1/weather/**").permitAll()
                 // Swagger & H2 Console
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/h2-console/**").permitAll()
                 // All other endpoints require authentication

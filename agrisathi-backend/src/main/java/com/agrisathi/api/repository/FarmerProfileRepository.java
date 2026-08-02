@@ -8,5 +8,6 @@ import java.util.Optional;
 
 @Repository
 public interface FarmerProfileRepository extends JpaRepository<FarmerProfile, Long> {
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"user"})
     Optional<FarmerProfile> findByUserId(Long userId);
 }

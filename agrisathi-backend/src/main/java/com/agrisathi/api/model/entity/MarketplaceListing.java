@@ -1,6 +1,7 @@
 package com.agrisathi.api.model.entity;
 
 import com.agrisathi.api.model.enums.ListingStatus;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -12,13 +13,15 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "marketplace_listings", indexes = {
     @Index(name = "idx_marketplace_user", columnList = "user_id"),
-    @Index(name = "idx_marketplace_status_crop", columnList = "status, crop_name")
+    @Index(name = "idx_marketplace_status_crop", columnList = "status, crop_name"),
+    @Index(name = "idx_marketplace_location", columnList = "location")
 })
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class MarketplaceListing {
 
     @Id
@@ -27,10 +30,17 @@ public class MarketplaceListing {
 
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "user_id", nullable = false)
+    @JsonIgnoreProperties({"hibernateLazyInitializer", "handler", "passwordHash"})
     private User user;
 
     @Column(name = "crop_name", nullable = false, length = 100)
     private String cropName;
+
+    @Column(columnDefinition = "TEXT")
+    private String description;
+
+    @Column(name = "image_url", length = 500)
+    private String imageUrl;
 
     @Column(nullable = false, precision = 10, scale = 2)
     private BigDecimal quantity;
