@@ -48,6 +48,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
   - Implemented `/api/v1/marketplace/listings/search` (Keyword search across crop, location, and description).
   - Implemented `/api/v1/marketplace/listings` (Create listing), `PUT /api/v1/marketplace/listings/{id}` (Update listing), and `DELETE /api/v1/marketplace/listings/{id}` (Delete listing).
   - Implemented `/api/v1/marketplace/listings/{id}/contact` (Seller contact endpoint returning seller contact info & generated buyer inquiry).
+- **Request DTO Validation (Phase 12)**:
+  - Reinforced all 10 request DTOs with strict Bean Validation (`jakarta.validation`).
+  - Added RFC 5322 `@Email` format and max length constraints.
+  - Added `@Pattern` regex validation for 10-digit Indian phone numbers (`^[6-9]\d{9}$`).
+  - Added HTTP/HTTPS image URL format validation (`@Pattern`).
+  - Added input length boundary rules (`@Size(min, max)`) on all text inputs to prevent database overflow attacks.
+  - Added numerical range limits (`@Positive`, `@DecimalMax`) on quantities, prices, and farm acreages.
+  - Added `DtoValidationTest` validation unit test suite.
+- **Response DTO Standardization**:
+  - Created dedicated `FarmerProfileResponse.java`, `GovernmentSchemeResponse.java`, and `MarketplaceListingResponse.java` DTOs with static `fromEntity` factory methods to completely eliminate JPA proxy leakage to API consumers.
+  - Applied `@JsonInclude(JsonInclude.Include.NON_NULL)` across all 17 Response DTOs to suppress null values in API payloads.
+  - Applied `@JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")` for consistent timestamp formatting across all API responses.
 - **System Documentation**:
   - Detailed project documentation (`README.md`, `ARCHITECTURE.md`, `DATABASE_SCHEMA.md`, `PROJECT_STRUCTURE.md`, `API_CONTRACT.md`, `SECURITY.md`, `DEPLOYMENT.md`, `TESTING.md`, `FEATURES.md`, `CONTRIBUTING.md`, `ROADMAP.md`, `LICENSE`).
 

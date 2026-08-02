@@ -2,6 +2,7 @@ package com.agrisathi.api.controller;
 
 import com.agrisathi.api.dto.request.GovernmentSchemeRequest;
 import com.agrisathi.api.dto.response.ApiResponse;
+import com.agrisathi.api.dto.response.GovernmentSchemeResponse;
 import com.agrisathi.api.dto.response.SchemeRecommendationResponse;
 import com.agrisathi.api.model.entity.GovernmentScheme;
 import com.agrisathi.api.security.UserPrincipal;
@@ -15,6 +16,7 @@ import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/government-schemes")
@@ -27,10 +29,12 @@ public class GovernmentSchemeController {
      * List and Filter Schemes by State and/or Crop
      */
     @GetMapping
-    public ResponseEntity<ApiResponse<List<GovernmentScheme>>> getSchemes(
+    public ResponseEntity<ApiResponse<List<GovernmentSchemeResponse>>> getSchemes(
             @RequestParam(required = false) String state,
             @RequestParam(required = false) String crop) {
-        List<GovernmentScheme> schemes = schemeService.getSchemes(state, crop);
+        List<GovernmentSchemeResponse> schemes = schemeService.getSchemes(state, crop).stream()
+                .map(GovernmentSchemeResponse::fromEntity)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(ApiResponse.success("Government schemes retrieved successfully", schemes));
     }
 
@@ -38,9 +42,9 @@ public class GovernmentSchemeController {
      * Get Single Scheme by ID
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<GovernmentScheme>> getSchemeById(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<GovernmentSchemeResponse>> getSchemeById(@PathVariable Long id) {
         GovernmentScheme scheme = schemeService.getSchemeById(id);
-        return ResponseEntity.ok(ApiResponse.success("Government scheme retrieved successfully", scheme));
+        return ResponseEntity.ok(ApiResponse.success("Government scheme retrieved successfully", GovernmentSchemeResponse.fromEntity(scheme)));
     }
 
     /**
@@ -62,9 +66,9 @@ public class GovernmentSchemeController {
      */
     @PostMapping
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<GovernmentScheme>> createScheme(@Valid @RequestBody GovernmentSchemeRequest request) {
+    public ResponseEntity<ApiResponse<GovernmentSchemeResponse>> createScheme(@Valid @RequestBody GovernmentSchemeRequest request) {
         GovernmentScheme created = schemeService.createScheme(request);
-        return new ResponseEntity<>(ApiResponse.success("Government scheme created successfully", created), HttpStatus.CREATED);
+        return new ResponseEntity<>(ApiResponse.success("Government scheme created successfully", GovernmentSchemeResponse.fromEntity(created)), HttpStatus.CREATED);
     }
 
     /**
@@ -72,11 +76,11 @@ public class GovernmentSchemeController {
      */
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('ADMIN')")
-    public ResponseEntity<ApiResponse<GovernmentScheme>> updateScheme(
+    public ResponseEntity<ApiResponse<GovernmentSchemeResponse>> updateScheme(
             @PathVariable Long id,
             @Valid @RequestBody GovernmentSchemeRequest request) {
         GovernmentScheme updated = schemeService.updateScheme(id, request);
-        return ResponseEntity.ok(ApiResponse.success("Government scheme updated successfully", updated));
+        return ResponseEntity.ok(ApiResponse.success("Government scheme updated successfully", GovernmentSchemeResponse.fromEntity(updated)));
     }
 
     /**

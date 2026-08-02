@@ -194,7 +194,7 @@ public class GovernmentSchemeServiceImpl implements GovernmentSchemeService {
 
             if (matchScore >= 40) {
                 recommendations.add(SchemeRecommendationResponse.builder()
-                        .scheme(scheme)
+                        .scheme(com.agrisathi.api.dto.response.GovernmentSchemeResponse.fromEntity(scheme))
                         .matchScore(matchScore)
                         .matchReason(String.join(" | ", matchReasons))
                         .build());

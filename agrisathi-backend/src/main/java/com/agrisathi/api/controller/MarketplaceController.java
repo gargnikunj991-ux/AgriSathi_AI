@@ -3,6 +3,7 @@ package com.agrisathi.api.controller;
 import com.agrisathi.api.dto.request.ContactSellerRequest;
 import com.agrisathi.api.dto.request.MarketplaceRequest;
 import com.agrisathi.api.dto.response.ApiResponse;
+import com.agrisathi.api.dto.response.MarketplaceListingResponse;
 import com.agrisathi.api.dto.response.SellerContactResponse;
 import com.agrisathi.api.model.entity.MarketplaceListing;
 import com.agrisathi.api.security.UserPrincipal;
@@ -16,6 +17,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/v1/marketplace")
@@ -28,12 +30,14 @@ public class MarketplaceController {
      * Browse Available Produce Listings (Supports optional filtering by crop, location, price range)
      */
     @GetMapping("/listings")
-    public ResponseEntity<ApiResponse<List<MarketplaceListing>>> browseListings(
+    public ResponseEntity<ApiResponse<List<MarketplaceListingResponse>>> browseListings(
             @RequestParam(required = false) String cropName,
             @RequestParam(required = false) String location,
             @RequestParam(required = false) BigDecimal minPrice,
             @RequestParam(required = false) BigDecimal maxPrice) {
-        List<MarketplaceListing> listings = marketplaceService.browseListings(cropName, location, minPrice, maxPrice);
+        List<MarketplaceListingResponse> listings = marketplaceService.browseListings(cropName, location, minPrice, maxPrice).stream()
+                .map(MarketplaceListingResponse::fromEntity)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(ApiResponse.success("Listings retrieved successfully", listings));
     }
 
@@ -41,8 +45,10 @@ public class MarketplaceController {
      * Search Produce Listings by Keyword
      */
     @GetMapping("/listings/search")
-    public ResponseEntity<ApiResponse<List<MarketplaceListing>>> searchListings(@RequestParam(required = false) String query) {
-        List<MarketplaceListing> listings = marketplaceService.searchListings(query);
+    public ResponseEntity<ApiResponse<List<MarketplaceListingResponse>>> searchListings(@RequestParam(required = false) String query) {
+        List<MarketplaceListingResponse> listings = marketplaceService.searchListings(query).stream()
+                .map(MarketplaceListingResponse::fromEntity)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(ApiResponse.success("Search results retrieved successfully", listings));
     }
 
@@ -50,9 +56,11 @@ public class MarketplaceController {
      * Get Logged-in Farmer's Listings
      */
     @GetMapping("/my-listings")
-    public ResponseEntity<ApiResponse<List<MarketplaceListing>>> getMyListings(
+    public ResponseEntity<ApiResponse<List<MarketplaceListingResponse>>> getMyListings(
             @AuthenticationPrincipal UserPrincipal currentUser) {
-        List<MarketplaceListing> listings = marketplaceService.getMyListings(currentUser.getId());
+        List<MarketplaceListingResponse> listings = marketplaceService.getMyListings(currentUser.getId()).stream()
+                .map(MarketplaceListingResponse::fromEntity)
+                .collect(Collectors.toList());
         return ResponseEntity.ok(ApiResponse.success("User listings retrieved successfully", listings));
     }
 
@@ -60,21 +68,21 @@ public class MarketplaceController {
      * Get Detailed Information for a Single Listing
      */
     @GetMapping("/listings/{listingId}")
-    public ResponseEntity<ApiResponse<MarketplaceListing>> getListingById(@PathVariable Long listingId) {
+    public ResponseEntity<ApiResponse<MarketplaceListingResponse>> getListingById(@PathVariable Long listingId) {
         MarketplaceListing listing = marketplaceService.getListingById(listingId);
-        return ResponseEntity.ok(ApiResponse.success("Listing details retrieved successfully", listing));
+        return ResponseEntity.ok(ApiResponse.success("Listing details retrieved successfully", MarketplaceListingResponse.fromEntity(listing)));
     }
 
     /**
      * Create New Produce Listing
      */
     @PostMapping("/listings")
-    public ResponseEntity<ApiResponse<MarketplaceListing>> createListing(
+    public ResponseEntity<ApiResponse<MarketplaceListingResponse>> createListing(
             @AuthenticationPrincipal UserPrincipal currentUser,
             @Valid @RequestBody MarketplaceRequest request) {
         MarketplaceListing listing = marketplaceService.createListing(currentUser.getId(), request);
         return new ResponseEntity<>(
-                ApiResponse.success("Listing created successfully", listing),
+                ApiResponse.success("Listing created successfully", MarketplaceListingResponse.fromEntity(listing)),
                 HttpStatus.CREATED
         );
     }
@@ -83,12 +91,12 @@ public class MarketplaceController {
      * Update Existing Produce Listing
      */
     @PutMapping("/listings/{listingId}")
-    public ResponseEntity<ApiResponse<MarketplaceListing>> updateListing(
+    public ResponseEntity<ApiResponse<MarketplaceListingResponse>> updateListing(
             @PathVariable Long listingId,
             @AuthenticationPrincipal UserPrincipal currentUser,
             @Valid @RequestBody MarketplaceRequest request) {
         MarketplaceListing updated = marketplaceService.updateListing(listingId, currentUser.getId(), request);
-        return ResponseEntity.ok(ApiResponse.success("Listing updated successfully", updated));
+        return ResponseEntity.ok(ApiResponse.success("Listing updated successfully", MarketplaceListingResponse.fromEntity(updated)));
     }
 
     /**

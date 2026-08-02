@@ -99,7 +99,7 @@ class GovernmentSchemeControllerTest {
                 .build();
 
         SchemeRecommendationResponse rec = SchemeRecommendationResponse.builder()
-                .scheme(scheme)
+                .scheme(com.agrisathi.api.dto.response.GovernmentSchemeResponse.fromEntity(scheme))
                 .matchScore(95)
                 .matchReason("State Match (Uttarakhand) | Specific Crop Match (Rice)")
                 .build();
