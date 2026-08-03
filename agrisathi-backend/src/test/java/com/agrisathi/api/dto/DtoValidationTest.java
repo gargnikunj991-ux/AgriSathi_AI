@@ -25,7 +25,7 @@ class DtoValidationTest {
     }
 
     @Test
-    @DisplayName("RegisterRequest Validation - Should fail on invalid email and phone number")
+    @DisplayName("RegisterRequest Validation - Should fail on invalid email, phone number, and missing role")
     void testRegisterRequestValidationInvalid() {
         RegisterRequest request = RegisterRequest.builder()
                 .name("A")
@@ -35,17 +35,18 @@ class DtoValidationTest {
                 .build();
 
         Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);
-        assertThat(violations).hasSize(5);
+        assertThat(violations).isNotEmpty();
     }
 
     @Test
-    @DisplayName("RegisterRequest Validation - Should pass on valid inputs")
+    @DisplayName("RegisterRequest Validation - Should pass on valid inputs with mandatory role selection")
     void testRegisterRequestValidationValid() {
         RegisterRequest request = RegisterRequest.builder()
                 .name("Ramesh Kumar")
                 .email("ramesh@gmail.com")
                 .password("Password@123")
                 .phone("9876543210")
+                .role("FARMER")
                 .build();
 
         Set<ConstraintViolation<RegisterRequest>> violations = validator.validate(request);

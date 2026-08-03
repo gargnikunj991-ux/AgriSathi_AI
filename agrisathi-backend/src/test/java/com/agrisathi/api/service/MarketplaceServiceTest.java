@@ -108,4 +108,72 @@ class MarketplaceServiceTest {
         assertThat(response.getSellerPhone()).isEqualTo("9876543210");
         assertThat(response.getContactStatus()).isEqualTo("INQUIRY_SENT");
     }
+
+    @Test
+    @DisplayName("buyListing - Should generate purchase order response")
+    void testBuyListing() {
+        User seller = User.builder()
+                .id(2L)
+                .name("Seller Suresh")
+                .phone("9876543210")
+                .email("suresh@agrisathi.com")
+                .build();
+
+        MarketplaceListing listing = MarketplaceListing.builder()
+                .id(5L)
+                .user(seller)
+                .cropName("Wheat")
+                .quantity(BigDecimal.valueOf(200))
+                .price(BigDecimal.valueOf(30))
+                .unit("kg")
+                .location("Haridwar")
+                .build();
+
+        ContactSellerRequest request = ContactSellerRequest.builder()
+                .buyerName("Buyer Ramesh")
+                .message("Purchasing 200kg wheat")
+                .build();
+
+        given(listingRepository.findById(5L)).willReturn(Optional.of(listing));
+
+        SellerContactResponse response = marketplaceService.buyListing(5L, request, 1L);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getSellerName()).isEqualTo("Seller Suresh");
+        assertThat(response.getContactStatus()).isEqualTo("PURCHASE_REQUESTED");
+    }
+
+    @Test
+    @DisplayName("borrowListing - Should generate borrow request response")
+    void testBorrowListing() {
+        User seller = User.builder()
+                .id(2L)
+                .name("Seller Suresh")
+                .phone("9876543210")
+                .email("suresh@agrisathi.com")
+                .build();
+
+        MarketplaceListing listing = MarketplaceListing.builder()
+                .id(5L)
+                .user(seller)
+                .cropName("Tractor Equipment")
+                .quantity(BigDecimal.valueOf(1))
+                .price(BigDecimal.valueOf(500))
+                .unit("day")
+                .location("Haridwar")
+                .build();
+
+        ContactSellerRequest request = ContactSellerRequest.builder()
+                .buyerName("Buyer Ramesh")
+                .message("Request to borrow tractor for 2 days")
+                .build();
+
+        given(listingRepository.findById(5L)).willReturn(Optional.of(listing));
+
+        SellerContactResponse response = marketplaceService.borrowListing(5L, request, 1L);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getSellerName()).isEqualTo("Seller Suresh");
+        assertThat(response.getContactStatus()).isEqualTo("BORROW_REQUESTED");
+    }
 }

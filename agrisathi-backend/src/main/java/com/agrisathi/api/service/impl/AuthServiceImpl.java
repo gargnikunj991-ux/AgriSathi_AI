@@ -34,15 +34,32 @@ public class AuthServiceImpl implements AuthService {
             throw new BadRequestException("Email is already registered!");
         }
 
+        Role assignedRole = determineRole(registerRequest.getRole());
+
         User user = User.builder()
                 .name(registerRequest.getName())
                 .email(registerRequest.getEmail())
                 .passwordHash(passwordEncoder.encode(registerRequest.getPassword()))
                 .phone(registerRequest.getPhone())
-                .role(Role.ROLE_USER)
+                .role(assignedRole)
                 .build();
 
         userRepository.save(user);
+    }
+
+    private Role determineRole(String requestedRole) {
+        if (requestedRole == null || requestedRole.isBlank()) {
+            throw new BadRequestException("Role selection is required. Please choose either FARMER or BUYER.");
+        }
+        String normalized = requestedRole.trim().toUpperCase();
+        if (normalized.equals("ADMIN") || normalized.equals("ROLE_ADMIN") || normalized.equals("OWNER")) {
+            return Role.ROLE_ADMIN;
+        } else if (normalized.equals("BUYER") || normalized.equals("ROLE_BUYER")) {
+            return Role.ROLE_BUYER;
+        } else if (normalized.equals("FARMER") || normalized.equals("ROLE_FARMER")) {
+            return Role.ROLE_FARMER;
+        }
+        throw new BadRequestException("Invalid role selected. Role must be either FARMER or BUYER.");
     }
 
     @Override

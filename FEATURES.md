@@ -55,6 +55,7 @@
 ## 3. Security & Administrative Features
 
 - **Role-Based Access Control (RBAC)**:
-  - `ROLE_USER`: Standard farmer/buyer access to personal profiles, scans, marketplace, and chat.
-  - `ROLE_ADMIN`: Administrative permissions to manage government scheme listings, review flagged content, and oversee platform health.
+  - `ROLE_ADMIN`: Platform oversight & government schemes management (master control; restricted from altering user personal information).
+  - `ROLE_FARMER`: Primary user role with access to all farming features (profiles, crops, disease scans, recommendations, weather, schemes, chat, marketplace posting & inquiry).
+  - `ROLE_BUYER`: Produce purchaser role restricted strictly to viewing, searching, buying, and borrowing from the marketplace.
 - **Auditing & Timestamps**: Automated tracking of `created_at` and `updated_at` timestamps across all entity records.

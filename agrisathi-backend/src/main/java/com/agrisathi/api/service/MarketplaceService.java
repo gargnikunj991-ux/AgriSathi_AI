@@ -18,4 +18,6 @@ public interface MarketplaceService {
     MarketplaceListing updateListing(Long listingId, Long userId, MarketplaceRequest request);
     void deleteListing(Long listingId, Long userId);
     SellerContactResponse contactSeller(Long listingId, ContactSellerRequest request, Long buyerUserId);
+    SellerContactResponse buyListing(Long listingId, ContactSellerRequest request, Long buyerUserId);
+    SellerContactResponse borrowListing(Long listingId, ContactSellerRequest request, Long buyerUserId);
 }

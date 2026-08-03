@@ -152,4 +152,62 @@ public class MarketplaceServiceImpl implements MarketplaceService {
                 .formattedInquiry(inquiryMessage)
                 .build();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SellerContactResponse buyListing(Long listingId, ContactSellerRequest request, Long buyerUserId) {
+        MarketplaceListing listing = getListingById(listingId);
+        User seller = listing.getUser();
+
+        String buyerName = StringUtils.hasText(request.getBuyerName()) ? request.getBuyerName() : "Purchasing Buyer";
+        String purchaseMessage = String.format("Purchase Order Confirmed: %s has placed an order to buy produce from listing '%s' (%.2f %s at ₹%.2f/%s) in %s. Buyer note: %s",
+                buyerName, listing.getCropName(), listing.getQuantity(), listing.getUnit(),
+                listing.getPrice(), listing.getUnit(), listing.getLocation(), request.getMessage());
+
+        log.info("Purchase order placed for listing {}: Buyer contact ({}, {}), Seller contact ({}, {})",
+                listingId, request.getBuyerPhone(), request.getBuyerEmail(), seller.getPhone(), seller.getEmail());
+
+        return SellerContactResponse.builder()
+                .listingId(listing.getId())
+                .cropName(listing.getCropName())
+                .quantity(listing.getQuantity())
+                .price(listing.getPrice())
+                .unit(listing.getUnit())
+                .location(listing.getLocation())
+                .sellerName(seller.getName())
+                .sellerPhone(seller.getPhone())
+                .sellerEmail(seller.getEmail())
+                .contactStatus("PURCHASE_REQUESTED")
+                .formattedInquiry(purchaseMessage)
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SellerContactResponse borrowListing(Long listingId, ContactSellerRequest request, Long buyerUserId) {
+        MarketplaceListing listing = getListingById(listingId);
+        User seller = listing.getUser();
+
+        String buyerName = StringUtils.hasText(request.getBuyerName()) ? request.getBuyerName() : "Borrowing Buyer";
+        String borrowMessage = String.format("Borrow/Rental Request: %s has requested to borrow item from listing '%s' (%.2f %s at ₹%.2f/%s) in %s. Borrow terms: %s",
+                buyerName, listing.getCropName(), listing.getQuantity(), listing.getUnit(),
+                listing.getPrice(), listing.getUnit(), listing.getLocation(), request.getMessage());
+
+        log.info("Borrow request submitted for listing {}: Buyer contact ({}, {}), Seller contact ({}, {})",
+                listingId, request.getBuyerPhone(), request.getBuyerEmail(), seller.getPhone(), seller.getEmail());
+
+        return SellerContactResponse.builder()
+                .listingId(listing.getId())
+                .cropName(listing.getCropName())
+                .quantity(listing.getQuantity())
+                .price(listing.getPrice())
+                .unit(listing.getUnit())
+                .location(listing.getLocation())
+                .sellerName(seller.getName())
+                .sellerPhone(seller.getPhone())
+                .sellerEmail(seller.getEmail())
+                .contactStatus("BORROW_REQUESTED")
+                .formattedInquiry(borrowMessage)
+                .build();
+    }
 }

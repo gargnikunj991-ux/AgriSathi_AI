@@ -44,6 +44,7 @@ class CropIntegrationTests {
         registerRequest.setEmail(uniqueEmail);
         registerRequest.setPassword("FarmerPass@123");
         registerRequest.setPhone("9876543211");
+        registerRequest.setRole("FARMER");
 
         mockMvc.perform(post("/api/v1/auth/register")
                         .contentType(MediaType.APPLICATION_JSON)

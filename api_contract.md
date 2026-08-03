@@ -73,12 +73,14 @@ Authentication Required: No
 ### Request
 ```json
 {
-  "name": "Nick",
-  "email": "nick@gmail.com",
+  "name": "Ramesh Kumar",
+  "email": "ramesh@agrisathi.com",
   "password": "Password@123",
-  "phone": "9876543210"
+  "phone": "9876543210",
+  "role": "FARMER"
 }
 ```
+> **Note:** `role` is mandatory during registration and must be either `FARMER` or `BUYER`.
 
 ### Response
 ```json
@@ -98,7 +100,7 @@ Authentication Required: No
 ### Request
 ```json
 {
-  "email": "nick@gmail.com",
+  "email": "ramesh@agrisathi.com",
   "password": "Password@123"
 }
 ```
@@ -510,6 +512,78 @@ Authentication Required: Optional
     "sellerEmail": "ramesh@agrisathi.com",
     "contactStatus": "INQUIRY_SENT",
     "formattedInquiry": "Hi Ramesh Kumar, John Doe is interested in your listing 'Rice'..."
+  }
+}
+```
+
+## Buy Listing
+`POST /api/v1/marketplace/listings/{listingId}/buy`
+
+Authentication Required: Yes (`ROLE_BUYER`, `ROLE_FARMER`, `ROLE_ADMIN`)
+
+### Request
+```json
+{
+  "message": "Placing order to buy 100kg Basmati Rice.",
+  "buyerName": "Anil Sharma",
+  "buyerPhone": "9876543210",
+  "buyerEmail": "anil@gmail.com"
+}
+```
+
+### Response
+```json
+{
+  "success": true,
+  "message": "Purchase order submitted successfully",
+  "data": {
+    "listingId": 1,
+    "cropName": "Rice",
+    "quantity": 100.0,
+    "price": 35.0,
+    "unit": "kg",
+    "location": "Dehradun",
+    "sellerName": "Ramesh Kumar",
+    "sellerPhone": "9998887770",
+    "sellerEmail": "ramesh@agrisathi.com",
+    "contactStatus": "PURCHASE_REQUESTED",
+    "formattedInquiry": "Purchase Order Confirmed: Anil Sharma has placed an order to buy produce from listing 'Rice'..."
+  }
+}
+```
+
+## Borrow / Rent Item
+`POST /api/v1/marketplace/listings/{listingId}/borrow`
+
+Authentication Required: Yes (`ROLE_BUYER`, `ROLE_FARMER`, `ROLE_ADMIN`)
+
+### Request
+```json
+{
+  "message": "Requesting to borrow tractor equipment for 3 days.",
+  "buyerName": "Anil Sharma",
+  "buyerPhone": "9876543210",
+  "buyerEmail": "anil@gmail.com"
+}
+```
+
+### Response
+```json
+{
+  "success": true,
+  "message": "Borrow request submitted successfully",
+  "data": {
+    "listingId": 1,
+    "cropName": "Tractor Equipment",
+    "quantity": 1.0,
+    "price": 500.0,
+    "unit": "day",
+    "location": "Dehradun",
+    "sellerName": "Ramesh Kumar",
+    "sellerPhone": "9998887770",
+    "sellerEmail": "ramesh@agrisathi.com",
+    "contactStatus": "BORROW_REQUESTED",
+    "formattedInquiry": "Borrow/Rental Request: Anil Sharma has requested to borrow item from listing 'Tractor Equipment'..."
   }
 }
 ```
