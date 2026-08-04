@@ -9,12 +9,14 @@ import com.agrisathi.api.repository.ChatHistoryRepository;
 import com.agrisathi.api.repository.UserRepository;
 import com.agrisathi.api.service.ChatService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class ChatServiceImpl implements ChatService {
@@ -25,10 +27,16 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Transactional
     public ChatResponse processChat(Long userId, ChatRequest request) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
-
         String prompt = request.getMessage() != null ? request.getMessage().trim() : "";
+        log.info("[AI_CHAT_REQUEST] AI Chat request received from UserID: {}, promptLength: {}, prompt: '{}'",
+                userId, prompt.length(), prompt);
+
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> {
+                    log.warn("[AI_CHAT_FAILED] User not found for UserID: {}", userId);
+                    return new ResourceNotFoundException("User not found: " + userId);
+                });
+
         String aiResponse = generateMockAiResponse(prompt);
 
         ChatHistory history = ChatHistory.builder()
@@ -38,6 +46,8 @@ public class ChatServiceImpl implements ChatService {
                 .build();
 
         ChatHistory savedHistory = chatHistoryRepository.save(history);
+        log.info("[AI_CHAT_RESPONSE] AI Chat response generated for UserID: {}, historyId: {}, responseLength: {}",
+                userId, savedHistory.getId(), aiResponse.length());
 
         return ChatResponse.builder()
                 .id(savedHistory.getId())
@@ -50,7 +60,8 @@ public class ChatServiceImpl implements ChatService {
     @Override
     @Transactional(readOnly = true)
     public List<ChatResponse> getChatHistory(Long userId) {
-        return chatHistoryRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
+        log.debug("[AI_CHAT_HISTORY] Fetching chat history for UserID: {}", userId);
+        List<ChatResponse> historyList = chatHistoryRepository.findByUserIdOrderByCreatedAtDesc(userId).stream()
                 .map(history -> ChatResponse.builder()
                         .id(history.getId())
                         .prompt(history.getPrompt())
@@ -58,6 +69,8 @@ public class ChatServiceImpl implements ChatService {
                         .timestamp(history.getCreatedAt())
                         .build())
                 .collect(Collectors.toList());
+        log.info("[AI_CHAT_HISTORY] Retrived {} chat history records for UserID: {}", historyList.size(), userId);
+        return historyList;
     }
 
     private String generateMockAiResponse(String prompt) {

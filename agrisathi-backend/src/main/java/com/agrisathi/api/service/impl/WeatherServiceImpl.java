@@ -35,12 +35,13 @@ public class WeatherServiceImpl implements WeatherService {
 
     @Override
     public CurrentWeatherResponse getCurrentWeather(double lat, double lon) {
+        log.info("[WEATHER_SERVICE_CURRENT] Weather requested for coordinates ({}, {})", lat, lon);
         LocalDateTime cutoff = LocalDateTime.now().minusMinutes(30);
         Optional<WeatherCache> cachedOpt = weatherCacheRepository.findCachedWeather(lat, lon, cutoff);
 
         if (cachedOpt.isPresent()) {
             WeatherCache cache = cachedOpt.get();
-            log.info("Returning cached weather data for location ({}, {})", lat, lon);
+            log.info("[WEATHER_CACHE_HIT] Returning cached weather data for coordinates ({}, {})", lat, lon);
             return CurrentWeatherResponse.builder()
                     .latitude(cache.getLatitude())
                     .longitude(cache.getLongitude())
@@ -66,11 +67,13 @@ public class WeatherServiceImpl implements WeatherService {
 
     @Override
     public WeatherForecastResponse getForecast(double lat, double lon, int days) {
+        log.info("[WEATHER_SERVICE_FORECAST] Multi-day weather forecast requested for ({}, {}), days: {}", lat, lon, days);
         return weatherClient.fetchForecast(lat, lon, days);
     }
 
     @Override
     public FarmingWeatherSummaryResponse getFarmingSummary(double lat, double lon) {
+        log.info("[WEATHER_SERVICE_SUMMARY] Farming weather summary & agromet advisory requested for ({}, {})", lat, lon);
         CurrentWeatherResponse current = getCurrentWeather(lat, lon);
         WeatherForecastResponse forecast = getForecast(lat, lon, 7);
 

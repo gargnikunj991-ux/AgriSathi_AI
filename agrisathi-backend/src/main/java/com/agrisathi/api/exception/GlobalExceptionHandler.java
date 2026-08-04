@@ -32,7 +32,8 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(BaseException.class)
     public ResponseEntity<ApiResponse<Void>> handleBaseException(BaseException ex, HttpServletRequest request) {
-        log.warn("Application Exception [{}]: {} at {}", ex.getErrorCode().getCode(), ex.getMessage(), request.getRequestURI());
+        log.warn("[ERROR_BASE_EXCEPTION] ErrorCode: {}, Message: '{}', URI: {}",
+                ex.getErrorCode().getCode(), ex.getMessage(), request.getRequestURI());
         List<String> errors = ex.getErrors() != null ? ex.getErrors() : Collections.singletonList(ex.getMessage());
         
         ApiResponse<Void> response = ApiResponse.error(
@@ -56,7 +57,7 @@ public class GlobalExceptionHandler {
             }
             errors.add(errorMessage);
         });
-        log.warn("Validation failed for request {}: {}", request.getRequestURI(), errors);
+        log.warn("[ERROR_VALIDATION_FAILED] Validation failed for URI {}: {}", request.getRequestURI(), errors);
 
         ApiResponse<Void> response = ApiResponse.error(
                 HttpStatus.BAD_REQUEST.value(),
@@ -75,7 +76,7 @@ public class GlobalExceptionHandler {
         ex.getConstraintViolations().forEach(violation -> 
             errors.add(violation.getPropertyPath() + ": " + violation.getMessage())
         );
-        log.warn("Constraint violation for request {}: {}", request.getRequestURI(), errors);
+        log.warn("[ERROR_CONSTRAINT_VIOLATION] Constraint violation for URI {}: {}", request.getRequestURI(), errors);
 
         ApiResponse<Void> response = ApiResponse.error(
                 HttpStatus.BAD_REQUEST.value(),
@@ -90,7 +91,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(HttpMessageNotReadableException.class)
     public ResponseEntity<ApiResponse<Void>> handleHttpMessageNotReadableException(HttpMessageNotReadableException ex, HttpServletRequest request) {
-        log.warn("Malformed JSON request at {}: {}", request.getRequestURI(), ex.getMessage());
+        log.warn("[ERROR_MALFORMED_JSON] Malformed JSON request payload at URI {}: {}", request.getRequestURI(), ex.getMessage());
         ApiResponse<Void> response = ApiResponse.error(
                 HttpStatus.BAD_REQUEST.value(),
                 HttpStatus.BAD_REQUEST.getReasonPhrase(),
@@ -105,7 +106,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentTypeMismatchException.class)
     public ResponseEntity<ApiResponse<Void>> handleMethodArgumentTypeMismatchException(MethodArgumentTypeMismatchException ex, HttpServletRequest request) {
         String message = String.format("Parameter '%s' should be of type '%s'", ex.getName(), ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown");
-        log.warn("Type mismatch at {}: {}", request.getRequestURI(), message);
+        log.warn("[ERROR_TYPE_MISMATCH] Method argument type mismatch at URI {}: {}", request.getRequestURI(), message);
 
         ApiResponse<Void> response = ApiResponse.error(
                 HttpStatus.BAD_REQUEST.value(),
@@ -121,7 +122,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
     public ResponseEntity<ApiResponse<Void>> handleHttpRequestMethodNotSupportedException(HttpRequestMethodNotSupportedException ex, HttpServletRequest request) {
         String message = String.format("HTTP Method '%s' is not supported for this endpoint. Supported methods: %s", ex.getMethod(), ex.getSupportedHttpMethods());
-        log.warn("Method not supported at {}: {}", request.getRequestURI(), message);
+        log.warn("[ERROR_METHOD_NOT_SUPPORTED] Method not supported at URI {}: {}", request.getRequestURI(), message);
 
         ApiResponse<Void> response = ApiResponse.error(
                 HttpStatus.METHOD_NOT_ALLOWED.value(),
@@ -137,7 +138,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(HttpMediaTypeNotSupportedException.class)
     public ResponseEntity<ApiResponse<Void>> handleHttpMediaTypeNotSupportedException(HttpMediaTypeNotSupportedException ex, HttpServletRequest request) {
         String message = String.format("Media type '%s' is not supported. Supported media types: %s", ex.getContentType(), ex.getSupportedMediaTypes());
-        log.warn("Media type not supported at {}: {}", request.getRequestURI(), message);
+        log.warn("[ERROR_MEDIA_TYPE_NOT_SUPPORTED] Media type not supported at URI {}: {}", request.getRequestURI(), message);
 
         ApiResponse<Void> response = ApiResponse.error(
                 HttpStatus.UNSUPPORTED_MEDIA_TYPE.value(),
@@ -153,7 +154,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MissingServletRequestParameterException.class)
     public ResponseEntity<ApiResponse<Void>> handleMissingServletRequestParameterException(MissingServletRequestParameterException ex, HttpServletRequest request) {
         String message = String.format("Required request parameter '%s' of type '%s' is missing", ex.getParameterName(), ex.getParameterType());
-        log.warn("Missing parameter at {}: {}", request.getRequestURI(), message);
+        log.warn("[ERROR_MISSING_PARAM] Missing request parameter at URI {}: {}", request.getRequestURI(), message);
 
         ApiResponse<Void> response = ApiResponse.error(
                 HttpStatus.BAD_REQUEST.value(),
@@ -168,7 +169,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(MaxUploadSizeExceededException.class)
     public ResponseEntity<ApiResponse<Void>> handleMaxUploadSizeExceededException(MaxUploadSizeExceededException ex, HttpServletRequest request) {
-        log.warn("Upload size exceeded at {}: {}", request.getRequestURI(), ex.getMessage());
+        log.warn("[ERROR_MAX_UPLOAD_EXCEEDED] Upload size exceeded limit at URI {}: {}", request.getRequestURI(), ex.getMessage());
 
         ApiResponse<Void> response = ApiResponse.error(
                 HttpStatus.PAYLOAD_TOO_LARGE.value(),
@@ -183,7 +184,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<ApiResponse<Void>> handleAuthenticationException(AuthenticationException ex, HttpServletRequest request) {
-        log.warn("Authentication failed at {}: {}", request.getRequestURI(), ex.getMessage());
+        log.warn("[ERROR_AUTHENTICATION_FAILED] Authentication failed at URI {}: {}", request.getRequestURI(), ex.getMessage());
 
         ApiResponse<Void> response = ApiResponse.error(
                 HttpStatus.UNAUTHORIZED.value(),
@@ -198,7 +199,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(AccessDeniedException.class)
     public ResponseEntity<ApiResponse<Void>> handleAccessDeniedException(AccessDeniedException ex, HttpServletRequest request) {
-        log.warn("Access denied at {}: {}", request.getRequestURI(), ex.getMessage());
+        log.warn("[ERROR_ACCESS_DENIED] Access denied at URI {}: {}", request.getRequestURI(), ex.getMessage());
 
         ApiResponse<Void> response = ApiResponse.error(
                 HttpStatus.FORBIDDEN.value(),
@@ -213,7 +214,7 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ApiResponse<Void>> handleGlobalException(Exception ex, HttpServletRequest request) {
-        log.error("Unhandled Exception at URI: {}", request.getRequestURI(), ex);
+        log.error("[ERROR_INTERNAL_SERVER] Unhandled Internal Server Exception at URI {}: {}", request.getRequestURI(), ex.getMessage(), ex);
 
         ApiResponse<Void> response = ApiResponse.error(
                 HttpStatus.INTERNAL_SERVER_ERROR.value(),

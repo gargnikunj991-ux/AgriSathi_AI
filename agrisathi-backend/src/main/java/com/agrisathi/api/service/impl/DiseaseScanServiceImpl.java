@@ -35,11 +35,18 @@ public class DiseaseScanServiceImpl implements DiseaseScanService {
     @Override
     @Transactional
     public DiseaseScanResponse scanDisease(Long userId, MultipartFile image) {
+        log.info("[AI_DISEASE_SCAN_REQUEST] Disease scan requested by UserID: {}, file: '{}', size: {} bytes, type: '{}'",
+                userId, image != null ? image.getOriginalFilename() : "null",
+                image != null ? image.getSize() : 0,
+                image != null ? image.getContentType() : "null");
+
         if (image == null || image.isEmpty()) {
+            log.warn("[AI_DISEASE_SCAN_FAILED] Empty or null image provided for UserID: {}", userId);
             throw new BadRequestException("Image file is required");
         }
 
         if (image.getSize() > MAX_FILE_SIZE) {
+            log.warn("[AI_DISEASE_SCAN_FAILED] File size {} exceeds limit for UserID: {}", image.getSize(), userId);
             throw new BadRequestException("File size exceeds maximum allowed 5MB limit");
         }
 
@@ -54,6 +61,7 @@ public class DiseaseScanServiceImpl implements DiseaseScanService {
         }
 
         if (!isValidContentType && !isValidExtension) {
+            log.warn("[AI_DISEASE_SCAN_FAILED] Invalid file format '{}' for UserID: {}", contentType, userId);
             throw new BadRequestException("Invalid image format. Allowed formats: JPG, JPEG, PNG, WEBP, GIF");
         }
 
@@ -64,7 +72,7 @@ public class DiseaseScanServiceImpl implements DiseaseScanService {
         try {
             imageUrl = cloudinaryUtil.uploadFile(image);
         } catch (Exception e) {
-            log.warn("Cloudinary upload failed, falling back to static URL for demo: {}", e.getMessage());
+            log.warn("[AI_DISEASE_SCAN_UPLOAD_WARN] Cloudinary upload failed, falling back to static URL: {}", e.getMessage());
             imageUrl = "https://cloudinary.com/demo-scan-" + System.currentTimeMillis() + ".jpg";
         }
 
@@ -99,6 +107,8 @@ public class DiseaseScanServiceImpl implements DiseaseScanService {
                 .build();
 
         DiseaseScan savedScan = diseaseScanRepository.save(scan);
+        log.info("[AI_DISEASE_SCAN_SUCCESS] AI Diagnosis completed - ScanID: {}, UserID: {}, Disease: '{}', Confidence: {}%, Image: '{}'",
+                savedScan.getId(), userId, disease, confidence, imageUrl);
 
         return mapToResponse(savedScan);
     }
@@ -106,18 +116,23 @@ public class DiseaseScanServiceImpl implements DiseaseScanService {
     @Override
     @Transactional(readOnly = true)
     public List<DiseaseScanResponse> getScanHistory(Long userId) {
-        return diseaseScanRepository.findByUserIdOrderByScannedAtDesc(userId).stream()
+        log.debug("[AI_DISEASE_SCAN_HISTORY] Fetching disease scan history for UserID: {}", userId);
+        List<DiseaseScanResponse> history = diseaseScanRepository.findByUserIdOrderByScannedAtDesc(userId).stream()
                 .map(this::mapToResponse)
                 .collect(Collectors.toList());
+        log.info("[AI_DISEASE_SCAN_HISTORY] Retrived {} disease scan records for UserID: {}", history.size(), userId);
+        return history;
     }
 
     @Override
     @Transactional(readOnly = true)
     public DiseaseScanResponse getScanById(Long userId, Long scanId) {
+        log.debug("[AI_DISEASE_SCAN_DETAIL] Fetching scan details for ScanID: {} by UserID: {}", scanId, userId);
         DiseaseScan scan = diseaseScanRepository.findById(scanId)
                 .orElseThrow(() -> new ResourceNotFoundException("Disease scan record not found: " + scanId));
 
         if (!scan.getUser().getId().equals(userId)) {
+            log.warn("[AI_DISEASE_SCAN_UNAUTHORIZED] UserID {} attempted unauthorized access to ScanID {}", userId, scanId);
             throw new BadRequestException("You are not authorized to view this scan record");
         }
 

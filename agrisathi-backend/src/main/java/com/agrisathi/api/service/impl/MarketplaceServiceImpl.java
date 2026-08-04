@@ -31,48 +31,70 @@ public class MarketplaceServiceImpl implements MarketplaceService {
     @Override
     @Transactional(readOnly = true)
     public List<MarketplaceListing> getAllListings() {
+        log.debug("[MARKETPLACE_GET_ALL] Fetching all AVAILABLE produce listings");
         return listingRepository.findByStatus(ListingStatus.AVAILABLE);
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<MarketplaceListing> browseListings(String cropName, String location, BigDecimal minPrice, BigDecimal maxPrice) {
+        log.info("[MARKETPLACE_BROWSE] Browsing listings with filters - cropName: '{}', location: '{}', minPrice: {}, maxPrice: {}",
+                cropName, location, minPrice, maxPrice);
+        List<MarketplaceListing> results;
         if (StringUtils.hasText(cropName) || StringUtils.hasText(location) || minPrice != null || maxPrice != null) {
-            return listingRepository.browseListings(
+            results = listingRepository.browseListings(
                     StringUtils.hasText(cropName) ? cropName.trim() : null,
                     StringUtils.hasText(location) ? location.trim() : null,
                     minPrice,
                     maxPrice
             );
+        } else {
+            results = getAllListings();
         }
-        return getAllListings();
+        log.info("[MARKETPLACE_BROWSE_SUCCESS] Found {} matching listings", results.size());
+        return results;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<MarketplaceListing> searchListings(String query) {
+        log.info("[MARKETPLACE_SEARCH] Searching listings with query: '{}'", query);
+        List<MarketplaceListing> results;
         if (!StringUtils.hasText(query)) {
-            return getAllListings();
+            results = getAllListings();
+        } else {
+            results = listingRepository.searchListings(query.trim());
         }
-        return listingRepository.searchListings(query.trim());
+        log.info("[MARKETPLACE_SEARCH_SUCCESS] Search for '{}' returned {} listings", query, results.size());
+        return results;
     }
 
     @Override
     @Transactional(readOnly = true)
     public List<MarketplaceListing> getMyListings(Long userId) {
-        return listingRepository.findByUserId(userId);
+        log.debug("[MARKETPLACE_MY_LISTINGS] Fetching listings for UserID: {}", userId);
+        List<MarketplaceListing> myListings = listingRepository.findByUserId(userId);
+        log.info("[MARKETPLACE_MY_LISTINGS_SUCCESS] Retrived {} listings for UserID: {}", myListings.size(), userId);
+        return myListings;
     }
 
     @Override
     @Transactional(readOnly = true)
     public MarketplaceListing getListingById(Long listingId) {
+        log.debug("[MARKETPLACE_VIEW] Fetching listing details for ListingID: {}", listingId);
         return listingRepository.findById(listingId)
-                .orElseThrow(() -> new ResourceNotFoundException("Marketplace listing not found with id: " + listingId));
+                .orElseThrow(() -> {
+                    log.warn("[MARKETPLACE_NOT_FOUND] Listing not found for ListingID: {}", listingId);
+                    return new ResourceNotFoundException("Marketplace listing not found with id: " + listingId);
+                });
     }
 
     @Override
     @Transactional
     public MarketplaceListing createListing(Long userId, MarketplaceRequest request) {
+        log.info("[MARKETPLACE_CREATE_ATTEMPT] Listing creation initiated by UserID: {}, crop: '{}', qty: {} {}, price: ₹{}",
+                userId, request.getCropName(), request.getQuantity(), request.getUnit(), request.getPrice());
+
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
 
@@ -88,14 +110,20 @@ public class MarketplaceServiceImpl implements MarketplaceService {
                 .status(request.getStatus() != null ? request.getStatus() : ListingStatus.AVAILABLE)
                 .build();
 
-        return listingRepository.save(listing);
+        MarketplaceListing saved = listingRepository.save(listing);
+        log.info("[MARKETPLACE_CREATE_SUCCESS] Created Marketplace ListingID: {} for UserID: {}, crop: '{}', price: ₹{}",
+                saved.getId(), userId, saved.getCropName(), saved.getPrice());
+
+        return saved;
     }
 
     @Override
     @Transactional
     public MarketplaceListing updateListing(Long listingId, Long userId, MarketplaceRequest request) {
+        log.info("[MARKETPLACE_UPDATE_ATTEMPT] Updating ListingID: {} by UserID: {}", listingId, userId);
         MarketplaceListing listing = getListingById(listingId);
         if (!listing.getUser().getId().equals(userId)) {
+            log.warn("[MARKETPLACE_UNAUTHORIZED] UserID: {} not authorized to update ListingID: {}", userId, listingId);
             throw new UnauthorizedException("You are not authorized to update this listing");
         }
 
@@ -110,23 +138,29 @@ public class MarketplaceServiceImpl implements MarketplaceService {
             listing.setStatus(request.getStatus());
         }
 
-        return listingRepository.save(listing);
+        MarketplaceListing updated = listingRepository.save(listing);
+        log.info("[MARKETPLACE_UPDATE_SUCCESS] Updated ListingID: {} by UserID: {}, status: {}", updated.getId(), userId, updated.getStatus());
+        return updated;
     }
 
     @Override
     @Transactional
     public void deleteListing(Long listingId, Long userId) {
+        log.info("[MARKETPLACE_DELETE_ATTEMPT] Deleting ListingID: {} by UserID: {}", listingId, userId);
         MarketplaceListing listing = getListingById(listingId);
         if (!listing.getUser().getId().equals(userId)) {
+            log.warn("[MARKETPLACE_UNAUTHORIZED] UserID: {} not authorized to delete ListingID: {}", userId, listingId);
             throw new UnauthorizedException("You are not authorized to delete this listing");
         }
 
         listingRepository.delete(listing);
+        log.info("[MARKETPLACE_DELETE_SUCCESS] ListingID: {} deleted successfully by UserID: {}", listingId, userId);
     }
 
     @Override
     @Transactional(readOnly = true)
     public SellerContactResponse contactSeller(Long listingId, ContactSellerRequest request, Long buyerUserId) {
+        log.info("[MARKETPLACE_INQUIRY_ATTEMPT] Buyer inquiry submitted for ListingID: {} by buyerUserId: {}", listingId, buyerUserId);
         MarketplaceListing listing = getListingById(listingId);
         User seller = listing.getUser();
 
@@ -135,7 +169,7 @@ public class MarketplaceServiceImpl implements MarketplaceService {
                 seller.getName(), buyerName, listing.getCropName(), listing.getQuantity(), listing.getUnit(),
                 listing.getPrice(), listing.getUnit(), listing.getLocation(), request.getMessage());
 
-        log.info("Inquiry submitted for listing {}: Buyer contact ({}, {}), Seller contact ({}, {})",
+        log.info("[MARKETPLACE_INQUIRY_SUCCESS] Inquiry submitted for listingId: {}: Buyer contact ({}, {}), Seller contact ({}, {})",
                 listingId, request.getBuyerPhone(), request.getBuyerEmail(), seller.getPhone(), seller.getEmail());
 
         return SellerContactResponse.builder()
@@ -156,6 +190,7 @@ public class MarketplaceServiceImpl implements MarketplaceService {
     @Override
     @Transactional(readOnly = true)
     public SellerContactResponse buyListing(Long listingId, ContactSellerRequest request, Long buyerUserId) {
+        log.info("[MARKETPLACE_BUY_ATTEMPT] Purchase request placed for ListingID: {} by buyerUserId: {}", listingId, buyerUserId);
         MarketplaceListing listing = getListingById(listingId);
         User seller = listing.getUser();
 
@@ -164,7 +199,7 @@ public class MarketplaceServiceImpl implements MarketplaceService {
                 buyerName, listing.getCropName(), listing.getQuantity(), listing.getUnit(),
                 listing.getPrice(), listing.getUnit(), listing.getLocation(), request.getMessage());
 
-        log.info("Purchase order placed for listing {}: Buyer contact ({}, {}), Seller contact ({}, {})",
+        log.info("[MARKETPLACE_BUY_SUCCESS] Purchase order placed for listingId: {}: Buyer contact ({}, {}), Seller contact ({}, {})",
                 listingId, request.getBuyerPhone(), request.getBuyerEmail(), seller.getPhone(), seller.getEmail());
 
         return SellerContactResponse.builder()
@@ -185,6 +220,7 @@ public class MarketplaceServiceImpl implements MarketplaceService {
     @Override
     @Transactional(readOnly = true)
     public SellerContactResponse borrowListing(Long listingId, ContactSellerRequest request, Long buyerUserId) {
+        log.info("[MARKETPLACE_BORROW_ATTEMPT] Borrow request submitted for ListingID: {} by buyerUserId: {}", listingId, buyerUserId);
         MarketplaceListing listing = getListingById(listingId);
         User seller = listing.getUser();
 
@@ -193,7 +229,7 @@ public class MarketplaceServiceImpl implements MarketplaceService {
                 buyerName, listing.getCropName(), listing.getQuantity(), listing.getUnit(),
                 listing.getPrice(), listing.getUnit(), listing.getLocation(), request.getMessage());
 
-        log.info("Borrow request submitted for listing {}: Buyer contact ({}, {}), Seller contact ({}, {})",
+        log.info("[MARKETPLACE_BORROW_SUCCESS] Borrow request submitted for listingId: {}: Buyer contact ({}, {}), Seller contact ({}, {})",
                 listingId, request.getBuyerPhone(), request.getBuyerEmail(), seller.getPhone(), seller.getEmail());
 
         return SellerContactResponse.builder()

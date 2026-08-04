@@ -10,6 +10,13 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.List;
 
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
+
+import java.util.Arrays;
+import java.util.List;
+
+@Slf4j
 @Service
 public class RecommendationServiceImpl implements RecommendationService {
 
@@ -18,6 +25,9 @@ public class RecommendationServiceImpl implements RecommendationService {
         String crop = request.getCrop() != null ? request.getCrop().trim() : "Crop";
         String soilType = request.getSoilType() != null ? request.getSoilType().trim() : "Loamy";
         String disease = request.getDisease() != null ? request.getDisease().trim() : "";
+
+        log.info("[AI_RECOMMENDATION_FERTILIZER_REQUEST] Fertilizer recommendation requested for crop: '{}', soilType: '{}', disease: '{}'",
+                crop, soilType, disease);
 
         String fertilizer = "NPK 19:19:19 + Neem Cake";
         String quantity = "50 kg/acre";
@@ -39,6 +49,9 @@ public class RecommendationServiceImpl implements RecommendationService {
             organicAlternatives = Arrays.asList("Organic Compost", "Green Manure (Dhaincha/Sunn hemp)");
         }
 
+        log.info("[AI_RECOMMENDATION_FERTILIZER_SUCCESS] Recommended fertilizer: '{}', quantity: '{}' for crop '{}'",
+                fertilizer, quantity, crop);
+
         return FertilizerRecommendationResponse.builder()
                 .fertilizer(fertilizer)
                 .quantity(quantity)
@@ -54,6 +67,9 @@ public class RecommendationServiceImpl implements RecommendationService {
         String district = request.getDistrict();
         String soilType = request.getSoilType();
         String season = request.getSeason() != null ? request.getSeason() : "Kharif";
+
+        log.info("[AI_RECOMMENDATION_CROP_REQUEST] Crop advice requested for state: '{}', district: '{}', soilType: '{}', season: '{}'",
+                state, district, soilType, season);
 
         List<String> recommendedCrops;
         String optimalSowingWindow;
@@ -84,6 +100,9 @@ public class RecommendationServiceImpl implements RecommendationService {
             irrigationAdvice = "Maintain 2-3 cm standing water in paddy fields during initial 3 weeks.";
             pestWarning = "Preventive spray for Stem Borer and Brown Plant Hopper recommended.";
         }
+
+        log.info("[AI_RECOMMENDATION_CROP_SUCCESS] Generated crop advice for '{}/{}' (season: {}): recommended crops = {}",
+                district, state, season, recommendedCrops);
 
         return CropAdviceResponse.builder()
                 .state(state)

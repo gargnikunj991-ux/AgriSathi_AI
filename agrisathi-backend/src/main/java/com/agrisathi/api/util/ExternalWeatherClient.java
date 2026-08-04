@@ -31,6 +31,7 @@ public class ExternalWeatherClient {
             "&timezone=auto";
 
     public CurrentWeatherResponse fetchCurrentWeather(double lat, double lon) {
+        log.info("[WEATHER_API_CALL] Fetching current weather from Open-Meteo API for coordinates ({}, {})", lat, lon);
         try {
             String responseStr = restTemplate.getForObject(OPEN_METEO_URL, String.class, lat, lon);
             if (responseStr != null) {
@@ -46,6 +47,9 @@ public class ExternalWeatherClient {
                     double windDir = current.path("wind_direction_10m").asDouble(180.0);
                     double pressure = current.path("surface_pressure").asDouble(1013.25);
                     double prec = current.path("precipitation").asDouble(0.0);
+
+                    log.info("[WEATHER_API_SUCCESS] Current weather fetched successfully for ({}, {}) - Condition: '{}', Temp: {}°C, Humidity: {}%",
+                            lat, lon, condition, temp, humidity);
 
                     return CurrentWeatherResponse.builder()
                             .latitude(lat)
@@ -66,7 +70,7 @@ public class ExternalWeatherClient {
                 }
             }
         } catch (Exception e) {
-            log.warn("Failed to fetch live weather from Open-Meteo for ({}, {}): {}. Using fallback.", lat, lon, e.getMessage());
+            log.warn("[WEATHER_API_FALLBACK] Failed to fetch live weather from Open-Meteo for ({}, {}): {}. Using fallback data.", lat, lon, e.getMessage());
         }
 
         return buildFallbackCurrentWeather(lat, lon);
@@ -74,6 +78,7 @@ public class ExternalWeatherClient {
 
     public WeatherForecastResponse fetchForecast(double lat, double lon, int days) {
         int requestedDays = Math.min(Math.max(days, 1), 14);
+        log.info("[WEATHER_FORECAST_API_CALL] Fetching {} day weather forecast from Open-Meteo API for coordinates ({}, {})", requestedDays, lat, lon);
         try {
             String responseStr = restTemplate.getForObject(OPEN_METEO_URL, String.class, lat, lon);
             if (responseStr != null) {
@@ -108,6 +113,9 @@ public class ExternalWeatherClient {
                                 .build());
                     }
 
+                    log.info("[WEATHER_FORECAST_SUCCESS] Weather forecast fetched successfully for ({}, {}) - {} days retrieved",
+                            lat, lon, forecasts.size());
+
                     return WeatherForecastResponse.builder()
                             .latitude(lat)
                             .longitude(lon)
@@ -118,7 +126,7 @@ public class ExternalWeatherClient {
                 }
             }
         } catch (Exception e) {
-            log.warn("Failed to fetch live forecast from Open-Meteo for ({}, {}): {}. Using fallback.", lat, lon, e.getMessage());
+            log.warn("[WEATHER_FORECAST_FALLBACK] Failed to fetch live forecast from Open-Meteo for ({}, {}): {}. Using fallback data.", lat, lon, e.getMessage());
         }
 
         return buildFallbackForecast(lat, lon, requestedDays);
