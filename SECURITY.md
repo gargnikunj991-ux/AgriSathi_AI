@@ -41,8 +41,8 @@ sequenceDiagram
   ```json
   {
     "sub": "user_id_12345",
-    "email": "nick@gmail.com",
-    "roles": ["ROLE_USER"],
+    "email": "farmer@agrisathi.com",
+    "roles": ["ROLE_FARMER"],
     "iat": 1785230000,
     "exp": 1785231800
   }
@@ -52,22 +52,27 @@ sequenceDiagram
 
 ## 2. Role-Based Access Control (RBAC) Matrix
 
-| Endpoint | Method | Public / Anonymous | Authenticated User (`ROLE_USER`) | Admin (`ROLE_ADMIN`) |
-| :--- | :--- | :---: | :---: | :---: |
-| `/api/v1/auth/register` | `POST` | ✅ | ✅ | ✅ |
-| `/api/v1/auth/login` | `POST` | ✅ | ✅ | ✅ |
-| `/api/v1/auth/me` | `GET` | ❌ | ✅ | ✅ |
-| `/api/v1/farmer/profile` | `PUT` / `GET` | ❌ | ✅ | ✅ |
-| `/api/v1/crops/**` | `GET` / `POST` / `PUT` / `DELETE` | ❌ | ✅ (Owned Records Only) | ✅ |
-| `/api/v1/disease/scan` | `POST` | ❌ | ✅ | ✅ |
-| `/api/v1/disease/history` | `GET` | ❌ | ✅ | ✅ |
-| `/api/v1/weather` | `GET` | ❌ | ✅ | ✅ |
-| `/api/v1/recommendations/**` | `POST` | ❌ | ✅ | ✅ |
-| `/api/v1/chat` | `POST` | ❌ | ✅ | ✅ |
-| `/api/v1/marketplace/listings` | `GET` | ✅ | ✅ | ✅ |
-| `/api/v1/marketplace/listings` | `POST` / `PUT` / `DELETE` | ❌ | ✅ (Owned Listings Only) | ✅ |
-| `/api/v1/government-schemes` | `GET` | ✅ | ✅ | ✅ |
-| `/api/v1/files/upload` | `POST` | ❌ | ✅ | ✅ |
+| Endpoint | Method | Public / Anonymous | Farmer (`ROLE_FARMER`) | Buyer (`ROLE_BUYER`) | Admin (`ROLE_ADMIN`) |
+| :--- | :--- | :---: | :---: | :---: | :---: |
+| `/api/v1/auth/register` | `POST` | ✅ | ✅ | ✅ | ✅ |
+| `/api/v1/auth/login` | `POST` | ✅ | ✅ | ✅ | ✅ |
+| `/api/v1/auth/me` | `GET` | ❌ | ✅ | ✅ | ✅ |
+| `/api/v1/farmer/profile/**` | `GET`/`POST`/`PUT`/`DELETE` | ❌ | ✅ | ❌ | ❌ (Cannot alter personal info) |
+| `/api/v1/crops/**` | `GET`/`POST`/`PUT`/`DELETE` | ❌ | ✅ | ❌ | ✅ |
+| `/api/v1/disease/**` | `POST`/`GET` | ❌ | ✅ | ❌ | ✅ |
+| `/api/v1/weather/**` | `GET` | ❌ | ✅ | ❌ | ✅ |
+| `/api/v1/recommendations/**` | `POST` | ❌ | ✅ | ❌ | ✅ |
+| `/api/v1/government-schemes/**` | `GET` | ❌ | ✅ | ❌ | ✅ |
+| `/api/v1/government-schemes` | `POST`/`PUT`/`DELETE` | ❌ | ❌ | ❌ | ✅ |
+| `/api/v1/chat/**` | `POST`/`GET` | ❌ | ✅ | ❌ | ✅ |
+| `/api/v1/files/**` | `POST` | ❌ | ✅ | ❌ | ✅ |
+| `/api/v1/marketplace/listings` (View/Search) | `GET` | ❌ | ✅ | ✅ | ✅ |
+| `/api/v1/marketplace/listings/*/contact` | `POST` | ❌ | ✅ | ✅ | ✅ |
+| `/api/v1/marketplace/listings/*/buy` | `POST` | ❌ | ✅ | ✅ (Buy Produce) | ✅ |
+| `/api/v1/marketplace/listings/*/borrow` | `POST` | ❌ | ✅ | ✅ (Borrow Items) | ✅ |
+| `/api/v1/marketplace/listings` (Create/Edit) | `POST`/`PUT`/`DELETE` | ❌ | ✅ | ❌ | ✅ |
+| `/api/v1/marketplace/my-listings` | `GET` | ❌ | ✅ | ❌ | ✅ |
+| `/api/v1/admin/**` | `GET` | ❌ | ❌ | ❌ | ✅ (Master Oversight) |
 
 ---
 

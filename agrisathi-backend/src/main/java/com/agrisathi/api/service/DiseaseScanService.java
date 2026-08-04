@@ -8,4 +8,5 @@ import java.util.List;
 public interface DiseaseScanService {
     DiseaseScanResponse scanDisease(Long userId, MultipartFile image);
     List<DiseaseScanResponse> getScanHistory(Long userId);
+    DiseaseScanResponse getScanById(Long userId, Long scanId);
 }

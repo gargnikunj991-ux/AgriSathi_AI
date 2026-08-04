@@ -29,14 +29,29 @@ public class WeatherCache {
     @Column(nullable = false)
     private Double temperature;
 
+    private Double apparentTemperature;
+
     @Column(nullable = false)
     private Integer humidity;
 
     @Column(name = "wind_speed", nullable = false)
     private Double windSpeed;
 
+    private Double windDirection;
+    private Double pressure;
+    private Double precipitation;
+
+    @Column(length = 255)
+    private String weatherCondition;
+
+    private Integer weatherCode;
+    private Double uvIndex;
+
     @Column(length = 255)
     private String forecast;
+
+    @Column(columnDefinition = "TEXT")
+    private String rawResponseJson;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

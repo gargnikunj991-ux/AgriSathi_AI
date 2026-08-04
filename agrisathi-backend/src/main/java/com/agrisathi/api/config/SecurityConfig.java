@@ -23,7 +23,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity
+@EnableMethodSecurity(prePostEnabled = true, securedEnabled = true, jsr250Enabled = true)
 @RequiredArgsConstructor
 public class SecurityConfig {
 
@@ -59,14 +59,42 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)) // For H2 console
             .authorizeHttpRequests(auth -> auth
-                // Public authentication endpoints
+                // 1. STRICTLY PUBLIC ENDPOINTS (Only Register & Login)
                 .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login").permitAll()
-                // Public read APIs
-                .requestMatchers(HttpMethod.GET, "/api/v1/marketplace/listings", "/api/v1/marketplace/listings/**").permitAll()
-                .requestMatchers(HttpMethod.GET, "/api/v1/government-schemes").permitAll()
-                // Swagger & H2 Console
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/h2-console/**").permitAll()
-                // All other endpoints require authentication
+
+                // 2. ADMIN / OWNER ONLY ENDPOINTS (Master control; cannot modify user personal info)
+                .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/v1/government-schemes").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/government-schemes/*").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/government-schemes/*").hasRole("ADMIN")
+
+                // 3. FARMER ONLY PERSONAL PROFILE (Admin cannot alter user personal info/profile)
+                .requestMatchers("/api/v1/farmer/profile/**").hasRole("FARMER")
+
+                // 4. FARMING RELATED FEATURES (Accessible to Farmer and Admin)
+                .requestMatchers("/api/v1/crops/**").hasAnyRole("FARMER", "ADMIN")
+                .requestMatchers("/api/v1/disease/**").hasAnyRole("FARMER", "ADMIN")
+                .requestMatchers("/api/v1/recommendations/**").hasAnyRole("FARMER", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/v1/weather/**").hasAnyRole("FARMER", "ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/v1/government-schemes/**").hasAnyRole("FARMER", "ADMIN")
+                .requestMatchers("/api/v1/chat/**").hasAnyRole("FARMER", "ADMIN")
+                .requestMatchers("/api/v1/files/**").hasAnyRole("FARMER", "ADMIN")
+
+                // 5. MARKETPLACE MANAGEMENT (Farmer & Admin create, update, delete listings & view my-listings)
+                .requestMatchers(HttpMethod.POST, "/api/v1/marketplace/listings").hasAnyRole("FARMER", "ADMIN")
+                .requestMatchers(HttpMethod.PUT, "/api/v1/marketplace/listings/*").hasAnyRole("FARMER", "ADMIN")
+                .requestMatchers(HttpMethod.DELETE, "/api/v1/marketplace/listings/*").hasAnyRole("FARMER", "ADMIN")
+                .requestMatchers("/api/v1/marketplace/my-listings").hasAnyRole("FARMER", "ADMIN")
+
+                // 6. BUYER SPECIFIC ACCESSIBLE ENDPOINTS (Marketplace view, search, contact seller, buy, borrow, & auth me)
+                .requestMatchers(HttpMethod.GET, "/api/v1/marketplace/listings", "/api/v1/marketplace/listings/**", "/api/v1/marketplace/listings/search").hasAnyRole("BUYER", "FARMER", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/v1/marketplace/listings/*/contact").hasAnyRole("BUYER", "FARMER", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/v1/marketplace/listings/*/buy").hasAnyRole("BUYER", "FARMER", "ADMIN")
+                .requestMatchers(HttpMethod.POST, "/api/v1/marketplace/listings/*/borrow").hasAnyRole("BUYER", "FARMER", "ADMIN")
+                .requestMatchers("/api/v1/auth/me").hasAnyRole("BUYER", "FARMER", "ADMIN")
+
+                // 7. ALL OTHER ENDPOINTS REQUIRE AUTHENTICATION
                 .anyRequest().authenticated()
             );
 

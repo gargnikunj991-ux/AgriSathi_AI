@@ -1,6 +1,7 @@
 package com.agrisathi.api.service.impl;
 
 import com.agrisathi.api.dto.request.CropRequest;
+import com.agrisathi.api.dto.response.CropResponse;
 import com.agrisathi.api.exception.ResourceNotFoundException;
 import com.agrisathi.api.model.entity.Crop;
 import com.agrisathi.api.model.entity.User;
@@ -23,50 +24,63 @@ public class CropServiceImpl implements CropService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Crop> getCropsByUserId(Long userId) {
-        return cropRepository.findByUserId(userId);
+    public List<CropResponse> getCropsByUserId(Long userId) {
+        return cropRepository.findByUserId(userId).stream()
+                .map(CropResponse::fromEntity)
+                .toList();
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Crop getCropByIdAndUserId(Long cropId, Long userId) {
-        return cropRepository.findByIdAndUserId(cropId, userId)
+    public CropResponse getCropByIdAndUserId(Long cropId, Long userId) {
+        Crop crop = cropRepository.findByIdAndUserId(cropId, userId)
                 .orElseThrow(() -> new ResourceNotFoundException("Crop not found with id: " + cropId));
+        return CropResponse.fromEntity(crop);
     }
 
     @Override
     @Transactional
-    public Crop addCrop(Long userId, CropRequest request) {
+    public CropResponse addCrop(Long userId, CropRequest request) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found: " + userId));
+
+        CropStatus initialStatus = request.getStatus() != null ? request.getStatus() : CropStatus.PLANTED;
 
         Crop crop = Crop.builder()
                 .user(user)
                 .cropName(request.getCropName())
                 .sowingDate(request.getSowingDate())
                 .harvestDate(request.getHarvestDate())
-                .status(CropStatus.PLANTED)
+                .status(initialStatus)
                 .build();
 
-        return cropRepository.save(crop);
+        Crop savedCrop = cropRepository.save(crop);
+        return CropResponse.fromEntity(savedCrop);
     }
 
     @Override
     @Transactional
-    public Crop updateCrop(Long cropId, Long userId, CropRequest request) {
-        Crop crop = getCropByIdAndUserId(cropId, userId);
+    public CropResponse updateCrop(Long cropId, Long userId, CropRequest request) {
+        Crop crop = cropRepository.findByIdAndUserId(cropId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Crop not found with id: " + cropId));
+
         crop.setCropName(request.getCropName());
         crop.setSowingDate(request.getSowingDate());
         if (request.getHarvestDate() != null) {
             crop.setHarvestDate(request.getHarvestDate());
         }
-        return cropRepository.save(crop);
+        if (request.getStatus() != null) {
+            crop.setStatus(request.getStatus());
+        }
+        Crop updatedCrop = cropRepository.save(crop);
+        return CropResponse.fromEntity(updatedCrop);
     }
 
     @Override
     @Transactional
     public void deleteCrop(Long cropId, Long userId) {
-        Crop crop = getCropByIdAndUserId(cropId, userId);
+        Crop crop = cropRepository.findByIdAndUserId(cropId, userId)
+                .orElseThrow(() -> new ResourceNotFoundException("Crop not found with id: " + cropId));
         cropRepository.delete(crop);
     }
 }

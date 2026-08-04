@@ -2,6 +2,7 @@ package com.agrisathi.api.security;
 
 import com.agrisathi.api.dto.response.ApiResponse;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -18,13 +19,22 @@ import java.util.Collections;
 @Component
 public class JwtAuthenticationEntryPoint implements AuthenticationEntryPoint {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
+    private final ObjectMapper objectMapper;
+
+    public JwtAuthenticationEntryPoint(ObjectMapper objectMapper) {
+        if (objectMapper != null) {
+            this.objectMapper = objectMapper;
+        } else {
+            this.objectMapper = new ObjectMapper().registerModule(new JavaTimeModule());
+        }
+    }
 
     @Override
     public void commence(HttpServletRequest request,
                          HttpServletResponse response,
                          AuthenticationException authException) throws IOException, ServletException {
-        log.error("Unauthorized access error: {}", authException.getMessage());
+        log.warn("[AUTH_UNAUTHORIZED] [ERROR_UNAUTHORIZED] Unauthorized request attempt at URI: {}, Method: {}, Error: {}",
+                request.getRequestURI(), request.getMethod(), authException.getMessage());
 
         response.setContentType(MediaType.APPLICATION_JSON_VALUE);
         response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
