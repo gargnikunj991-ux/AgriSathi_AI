@@ -23,6 +23,7 @@
         <springdoc.version>2.5.0</springdoc.version>
         <bucket4j.version>8.10.1</bucket4j.version>
         <cloudinary.version>1.38.0</cloudinary.version>
+        <spring-dotenv.version>4.0.0</spring-dotenv.version>
     </properties>
 
     <dependencies>
@@ -111,6 +112,13 @@
             <groupId>com.cloudinary</groupId>
             <artifactId>cloudinary-http44</artifactId>
             <version>${cloudinary.version}</version>
+        </dependency>
+
+        <!-- Automatic .env file loading -->
+        <dependency>
+            <groupId>me.paulschwarz</groupId>
+            <artifactId>spring-dotenv</artifactId>
+            <version>${spring-dotenv.version}</version>
         </dependency>
 
         <!-- Testing Dependencies -->

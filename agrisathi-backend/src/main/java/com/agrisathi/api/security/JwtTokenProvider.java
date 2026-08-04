@@ -48,7 +48,7 @@ public class JwtTokenProvider {
                 .map(GrantedAuthority::getAuthority)
                 .collect(Collectors.toList());
 
-        return Jwts.builder()
+        String token = Jwts.builder()
                 .subject(userPrincipal.getId().toString())
                 .claim("email", userPrincipal.getEmail())
                 .claim("roles", roles)
@@ -56,6 +56,10 @@ public class JwtTokenProvider {
                 .expiration(expiryDate)
                 .signWith(getSigningKey(), Jwts.SIG.HS512)
                 .compact();
+
+        log.debug("[AUTH_TOKEN_GENERATED] JWT token issued for UserID: {}, email: {}, roles: {}",
+                userPrincipal.getId(), userPrincipal.getEmail(), roles);
+        return token;
     }
 
     public Long getUserIdFromJWT(String token) {
@@ -86,15 +90,15 @@ public class JwtTokenProvider {
                 .parseSignedClaims(authToken);
             return true;
         } catch (SignatureException ex) {
-            log.error("Invalid JWT signature");
+            log.warn("[AUTH_TOKEN_INVALID] Invalid JWT signature: {}", ex.getMessage());
         } catch (MalformedJwtException ex) {
-            log.error("Invalid JWT token");
+            log.warn("[AUTH_TOKEN_INVALID] Malformed JWT token: {}", ex.getMessage());
         } catch (ExpiredJwtException ex) {
-            log.error("Expired JWT token");
+            log.warn("[AUTH_TOKEN_EXPIRED] Expired JWT token: {}", ex.getMessage());
         } catch (UnsupportedJwtException ex) {
-            log.error("Unsupported JWT token");
+            log.warn("[AUTH_TOKEN_UNSUPPORTED] Unsupported JWT token: {}", ex.getMessage());
         } catch (IllegalArgumentException ex) {
-            log.error("JWT claims string is empty.");
+            log.warn("[AUTH_TOKEN_EMPTY] JWT claims string is empty: {}", ex.getMessage());
         }
         return false;
     }

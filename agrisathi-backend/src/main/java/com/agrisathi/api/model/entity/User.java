@@ -42,7 +42,7 @@ public class User {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 20)
     @Builder.Default
-    private Role role = Role.ROLE_USER;
+    private Role role = Role.ROLE_FARMER;
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

@@ -16,7 +16,11 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ApiResponse<T> {
     private boolean success;
+    private Integer status;
+    private String error;
+    private String errorCode;
     private String message;
+    private String path;
     private T data;
     private List<String> errors;
     private LocalDateTime timestamp;
@@ -42,6 +46,19 @@ public class ApiResponse<T> {
         return ApiResponse.<T>builder()
                 .success(false)
                 .message(message)
+                .errors(errors)
+                .timestamp(LocalDateTime.now())
+                .build();
+    }
+
+    public static <T> ApiResponse<T> error(int status, String error, String errorCode, String message, String path, List<String> errors) {
+        return ApiResponse.<T>builder()
+                .success(false)
+                .status(status)
+                .error(error)
+                .errorCode(errorCode)
+                .message(message)
+                .path(path)
                 .errors(errors)
                 .timestamp(LocalDateTime.now())
                 .build();

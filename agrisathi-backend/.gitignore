@@ -1,0 +1,22 @@
+# =========================
+# Build & Maven
+# =========================
+target/
+*.class
+
+# =========================
+# Environment & Secrets
+# =========================
+.env
+.env.*
+!.env.example
+application-local.properties
+
+# =========================
+# IDE & OS
+# =========================
+.idea/
+*.iml
+.vscode/
+.DS_Store
+Thumbs.db

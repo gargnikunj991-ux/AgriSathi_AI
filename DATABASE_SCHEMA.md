@@ -122,7 +122,7 @@ Stores authentication and basic user profile information.
 | `email` | `VARCHAR(150)` | `NOT NULL`, `UNIQUE` | User Email (Used for Login) |
 | `password_hash` | `VARCHAR(255)` | `NOT NULL` | BCrypt Encrypted Password Hash |
 | `phone` | `VARCHAR(15)` | `NOT NULL` | 10-digit Phone Number |
-| `role` | `VARCHAR(20)` | `DEFAULT 'ROLE_USER'` | Access Role (`ROLE_USER`, `ROLE_ADMIN`) |
+| `role` | `VARCHAR(20)` | `DEFAULT 'ROLE_FARMER'` | Access Role (`ROLE_FARMER`, `ROLE_BUYER`, `ROLE_ADMIN`) |
 | `created_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP` | Account Creation Timestamp |
 | `updated_at` | `TIMESTAMP` | `DEFAULT CURRENT_TIMESTAMP ON UPDATE` | Record Modification Timestamp |
 

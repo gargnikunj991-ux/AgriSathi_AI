@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @AllArgsConstructor
@@ -12,4 +14,7 @@ import lombok.NoArgsConstructor;
 public class FertilizerRecommendationResponse {
     private String fertilizer;
     private String quantity;
+    private String applicationMethod;
+    private String applicationTiming;
+    private List<String> organicAlternatives;
 }

@@ -9,7 +9,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "government_schemes", indexes = {
-    @Index(name = "idx_schemes_state", columnList = "state, is_active")
+    @Index(name = "idx_schemes_state", columnList = "state, is_active"),
+    @Index(name = "idx_schemes_crop", columnList = "target_crop, is_active")
 })
 @Getter
 @Setter
@@ -31,11 +32,23 @@ public class GovernmentScheme {
     @Column(nullable = false, length = 100)
     private String state;
 
+    @Column(name = "target_crop", length = 200)
+    private String targetCrop;
+
     @Column(columnDefinition = "TEXT")
     private String eligibility;
 
     @Column(length = 100)
     private String category;
+
+    @Column(name = "benefit_amount", length = 200)
+    private String benefitAmount;
+
+    @Column(name = "min_farm_size")
+    private Double minFarmSize;
+
+    @Column(name = "max_farm_size")
+    private Double maxFarmSize;
 
     @Column(name = "apply_link", length = 500)
     private String applyLink;
