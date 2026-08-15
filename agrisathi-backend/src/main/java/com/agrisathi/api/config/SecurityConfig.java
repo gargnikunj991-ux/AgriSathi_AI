@@ -61,6 +61,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 // 1. STRICTLY PUBLIC ENDPOINTS (Only Register & Login)
                 .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login").permitAll()
+                .requestMatchers("/actuator/health", "/actuator/health/**").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/h2-console/**").permitAll()
 
                 // 2. ADMIN / OWNER ONLY ENDPOINTS (Master control; cannot modify user personal info)

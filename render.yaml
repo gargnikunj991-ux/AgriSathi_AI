@@ -1,0 +1,50 @@
+services:
+  - type: web
+    name: agrisathi-backend
+    runtime: docker
+    dockerfilePath: agrisathi-backend/Dockerfile
+    dockerContext: agrisathi-backend
+    plan: free
+    region: singapore
+    healthCheckPath: /actuator/health
+    autoDeployTrigger: commit
+    envVars:
+      - key: PORT
+        value: 8080
+      - key: DATABASE_URL
+        fromDatabase:
+          name: agrisathi-postgres
+          property: connectionString
+      - key: DB_POOL_MAX
+        value: 10
+      - key: DB_POOL_MIN
+        value: 2
+      - key: DDL_AUTO
+        value: update
+      - key: SHOW_SQL
+        value: false
+      - key: FORMAT_SQL
+        value: false
+      - key: LOG_LEVEL_APP
+        value: INFO
+      - key: LOG_LEVEL_SECURITY
+        value: INFO
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRATION_MS
+        value: 1800000
+      - key: CLOUDINARY_CLOUD_NAME
+        sync: false
+      - key: CLOUDINARY_API_KEY
+        sync: false
+      - key: CLOUDINARY_API_SECRET
+        sync: false
+      - key: CORS_ALLOWED_ORIGINS
+        sync: false
+
+databases:
+  - name: agrisathi-postgres
+    databaseName: agrisathidb
+    user: agrisathi
+    plan: free
+    region: singapore
