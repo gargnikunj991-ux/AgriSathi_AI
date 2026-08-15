@@ -23,7 +23,12 @@ class ApiClient {
         if (typeof window !== 'undefined') {
           const token = localStorage.getItem('agrisathi_token');
           if (token && config.headers) {
-            config.headers.Authorization = `Bearer ${token}`;
+            // Clean up stale mock token if currently in real API mode
+            if (!USE_MOCK && token === 'mock_jwt_token_123') {
+              localStorage.removeItem('agrisathi_token');
+            } else {
+              config.headers.Authorization = `Bearer ${token}`;
+            }
           }
         }
         return config;

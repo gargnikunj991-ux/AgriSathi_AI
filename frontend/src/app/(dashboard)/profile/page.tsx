@@ -8,11 +8,13 @@ import { Input } from '@/components/common/Input';
 import { Select } from '@/components/common/Select';
 import { LoadingState } from '@/components/common/LoadingState';
 import { ErrorState } from '@/components/common/ErrorState';
-import { User, MapPin, CheckCircle2, Save } from 'lucide-react';
+import { User, MapPin, CheckCircle2, Save, LogOut } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { authService } from '@/lib/api/auth.service';
 import { FarmerProfile, User as UserType } from '@/lib/types';
 
 export default function ProfilePage() {
+  const router = useRouter();
   const [user, setUser] = useState<UserType | null>(null);
   const [profile, setProfile] = useState<FarmerProfile | null>(null);
   const [loading, setLoading] = useState(true);
@@ -28,24 +30,33 @@ export default function ProfilePage() {
   const [soilType, setSoilType] = useState('Loamy Soil');
   const [mainCrop, setMainCrop] = useState('Basmati Rice');
 
+  const handleLogout = () => {
+    authService.logout();
+    router.push('/login');
+  };
+
   const fetchProfile = async () => {
     setLoading(true);
     setError('');
     try {
-      const [userRes, profileRes] = await Promise.all([
+      const [userRes, profileRes] = await Promise.allSettled([
         authService.getMe(),
         authService.getProfile(),
       ]);
 
-      if (userRes.success) setUser(userRes.data);
-      if (profileRes.success) {
-        setProfile(profileRes.data);
-        setState(profileRes.data.state);
-        setDistrict(profileRes.data.district);
-        setVillage(profileRes.data.village);
-        setFarmSize(profileRes.data.farmSize.toString());
-        setSoilType(profileRes.data.soilType);
-        setMainCrop(profileRes.data.mainCrop);
+      if (userRes.status === 'fulfilled' && userRes.value.success) {
+        setUser(userRes.value.data);
+      }
+
+      if (profileRes.status === 'fulfilled' && profileRes.value?.success && profileRes.value?.data) {
+        const p = profileRes.value.data;
+        setProfile(p);
+        if (p.state) setState(p.state);
+        if (p.district) setDistrict(p.district);
+        if (p.village) setVillage(p.village);
+        if (p.farmSize != null) setFarmSize(p.farmSize.toString());
+        if (p.soilType) setSoilType(p.soilType);
+        if (p.mainCrop) setMainCrop(p.mainCrop);
       }
     } catch (err: unknown) {
       setError((err as Error).message || 'Failed to load profile');
@@ -96,9 +107,20 @@ export default function ProfilePage() {
             Manage your personal contact details, location, acreage, and soil profile.
           </p>
         </div>
-        <Badge variant="success" size="md">
-          {user?.role || 'FARMER'}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Badge variant="success" size="md">
+            {user?.role || 'FARMER'}
+          </Badge>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLogout}
+            className="text-red-700 border-red-200 hover:bg-red-50 hover:border-red-300"
+            leftIcon={<LogOut className="w-4 h-4" />}
+          >
+            Sign Out
+          </Button>
+        </div>
       </div>
 
       {/* Account Info Box */}

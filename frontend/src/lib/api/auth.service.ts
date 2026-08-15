@@ -21,7 +21,17 @@ export const authService = {
         data: { accessToken: 'mock_jwt_token_123', expiresIn: 1800, user },
       };
     }
-    return apiClient.post<AuthTokenResponse>('/auth/login', req);
+    const res = await apiClient.post<AuthTokenResponse>('/auth/login', req);
+    if (res.success && res.data?.accessToken && typeof window !== 'undefined') {
+      localStorage.setItem('agrisathi_token', res.data.accessToken);
+    }
+    return res;
+  },
+
+  logout(): void {
+    if (typeof window !== 'undefined') {
+      localStorage.removeItem('agrisathi_token');
+    }
   },
 
   async register(req: RegisterRequest): Promise<ApiResponse<void>> {

@@ -1,9 +1,10 @@
 'use client';
 
 import React from 'react';
-import { usePathname } from 'next/navigation';
-import { Menu, Bell, User as UserIcon } from 'lucide-react';
+import { usePathname, useRouter } from 'next/navigation';
+import { Menu, Bell, User as UserIcon, LogOut } from 'lucide-react';
 import Link from 'next/link';
+import { authService } from '@/lib/api/auth.service';
 
 interface HeaderProps {
   onOpenMobileNav?: () => void;
@@ -21,6 +22,12 @@ const ROUTE_TITLES: Record<string, string> = {
 
 export const Header: React.FC<HeaderProps> = ({ onOpenMobileNav }) => {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const handleLogout = () => {
+    authService.logout();
+    router.push('/login');
+  };
 
   const title =
     Object.entries(ROUTE_TITLES).find(
@@ -40,7 +47,7 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileNav }) => {
         <h1 className="text-lg font-bold text-stone-900 tracking-tight">{title}</h1>
       </div>
 
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2 sm:gap-3">
         <button
           className="p-2 rounded-lg text-stone-500 hover:text-stone-800 hover:bg-stone-100 transition-colors relative"
           aria-label="Notifications"
@@ -57,6 +64,15 @@ export const Header: React.FC<HeaderProps> = ({ onOpenMobileNav }) => {
             <UserIcon className="w-4 h-4" />
           </div>
         </Link>
+
+        <button
+          onClick={handleLogout}
+          className="hidden sm:flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-red-700 hover:text-red-800 hover:bg-red-50 rounded-lg border border-stone-200 hover:border-red-200 transition-colors"
+          title="Sign Out"
+        >
+          <LogOut className="w-3.5 h-3.5" />
+          <span>Sign Out</span>
+        </button>
       </div>
     </header>
   );
