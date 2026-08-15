@@ -1,25 +1,24 @@
-FROM maven:3.9-eclipse-temurin-21 AS build
+FROM maven:3.9.9-eclipse-temurin-21 AS build
 
-WORKDIR /workspace
+WORKDIR /app
 
 COPY pom.xml .
-RUN mvn -B dependency:go-offline
+
+RUN mvn dependency:go-offline -B
 
 COPY src ./src
-RUN mvn -B -DskipTests package
+
+RUN mvn clean package -DskipTests
+
 
 FROM eclipse-temurin:21-jre
 
 WORKDIR /app
 
-ENV JAVA_TOOL_OPTIONS="-XX:MaxRAMPercentage=75.0"
+RUN mkdir -p /app/logs
 
-RUN groupadd --system spring && useradd --system --gid spring spring
-
-COPY --from=build /workspace/target/*.jar app.jar
-
-USER spring:spring
+COPY --from=build /app/target/*.jar app.jar
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-jar", "/app/app.jar"]
+ENTRYPOINT ["sh", "-c", "java -Dserver.port=${PORT:-8080} -Dserver.address=0.0.0.0 -jar app.jar"]
