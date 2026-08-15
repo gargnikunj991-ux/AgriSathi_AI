@@ -8,12 +8,19 @@ This repository already points to:
 https://github.com/gargnikunj991-ux/AgriSathi_AI.git
 ```
 
-Commit and push deployment changes:
+Commit the deployment changes, push a branch, and open a pull request:
 
 ```bash
 git add .
 git commit -m "Add Render and Vercel deployment setup"
-git push origin main
+git switch -c deploy/render-vercel-setup
+git push -u origin deploy/render-vercel-setup
+```
+
+This repository protects `main`, so direct pushes to `main` are rejected. Open the pull request from:
+
+```text
+https://github.com/gargnikunj991-ux/AgriSathi_AI/pull/new/deploy/render-vercel-setup
 ```
 
 ## 2. Deploy Backend on Render
