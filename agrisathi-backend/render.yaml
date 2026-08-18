@@ -1,9 +1,10 @@
 services:
   - type: web
     name: agrisathi-backend
-    env: docker
+    runtime: docker
     rootDir: agrisathi-backend
-    dockerfilePath: Dockerfile
+    dockerContext: agrisathi-backend
+    dockerfilePath: agrisathi-backend/Dockerfile
     autoDeploy: true
     healthCheckPath: /api/v1/health
     envVars:

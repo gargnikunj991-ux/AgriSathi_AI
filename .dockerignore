@@ -6,6 +6,7 @@
 target
 build
 out
+agrisathi-backend/target
 
 .env
 .env.*
@@ -13,7 +14,4 @@ out
 
 *.log
 logs
-
-
-README.md
-*.md
+agrisathi-backend/logs
