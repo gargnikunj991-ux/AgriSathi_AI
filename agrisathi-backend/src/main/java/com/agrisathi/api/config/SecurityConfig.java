@@ -59,8 +59,8 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .headers(headers -> headers.frameOptions(HeadersConfigurer.FrameOptionsConfig::sameOrigin)) // For H2 console
             .authorizeHttpRequests(auth -> auth
-                // 1. STRICTLY PUBLIC ENDPOINTS (Only Register & Login)
-                .requestMatchers("/api/v1/auth/register", "/api/v1/auth/login").permitAll()
+                // 1. STRICTLY PUBLIC ENDPOINTS (Register, Login, Health & Docs)
+                .requestMatchers("/", "/api/v1/health", "/api/v1/auth/register", "/api/v1/auth/login").permitAll()
                 .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/h2-console/**").permitAll()
 
                 // 2. ADMIN / OWNER ONLY ENDPOINTS (Master control; cannot modify user personal info)
