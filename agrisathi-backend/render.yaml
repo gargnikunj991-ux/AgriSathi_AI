@@ -10,8 +10,6 @@ services:
         name: agrisathidb
         property: connectionString
       - key: DB_USERNAME
-        fromDatabase: agrisathi-db
-
         sync: false
       - key: DB_PASSWORD
         sync: false
