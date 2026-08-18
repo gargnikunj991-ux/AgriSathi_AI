@@ -13,10 +13,13 @@ target/
 application-local.properties
 
 # =========================
-# IDE & OS
+# IDE & OS & Logs
 # =========================
+logs/
+*.log
 .idea/
 *.iml
 .vscode/
 .DS_Store
 Thumbs.db
+
