@@ -33,6 +33,10 @@ public class DataSourceConfig {
     @Bean
     @Primary
     public DataSource dataSource() {
+        return new HikariDataSource(buildHikariConfig());
+    }
+
+    public HikariConfig buildHikariConfig() {
         HikariConfig config = new HikariConfig();
         
         String url = rawUrl != null ? rawUrl.trim() : "";
@@ -45,39 +49,76 @@ public class DataSourceConfig {
             config.setDriverClassName("org.h2.Driver");
             config.setUsername("sa");
             config.setPassword("");
-        } else if (url.startsWith("postgres://") || url.startsWith("postgresql://")) {
-            try {
-                URI uri = new URI(url.replace("postgres://", "http://").replace("postgresql://", "http://"));
-                String host = uri.getHost();
-                int port = uri.getPort() == -1 ? 5432 : uri.getPort();
-                String path = uri.getPath();
-                String query = uri.getQuery() != null ? "?" + uri.getQuery() : "";
-                
-                String jdbcUrl = "jdbc:postgresql://" + host + ":" + port + path + query;
-                config.setJdbcUrl(jdbcUrl);
-                config.setDriverClassName("org.postgresql.Driver");
+        } else {
+            String workingUrl = url;
+            if (workingUrl.startsWith("jdbc:")) {
+                workingUrl = workingUrl.substring(5);
+            }
 
-                if (uri.getUserInfo() != null && !uri.getUserInfo().isEmpty()) {
-                    String[] userInfo = uri.getUserInfo().split(":", 2);
-                    config.setUsername(userInfo[0]);
-                    if (userInfo.length > 1) {
-                        config.setPassword(userInfo[1]);
+            if (workingUrl.startsWith("postgres://") || workingUrl.startsWith("postgresql://")) {
+                try {
+                    // Extract query parameters if present
+                    String query = "";
+                    int queryIdx = workingUrl.indexOf('?');
+                    if (queryIdx != -1) {
+                        query = workingUrl.substring(queryIdx);
+                        workingUrl = workingUrl.substring(0, queryIdx);
                     }
-                } else {
+
+                    // Remove postgres:// or postgresql://
+                    String rest = workingUrl.replaceFirst("^postgres(ql)?://", "");
+
+                    // Separate authority (user:pass@host:port) and database path (/dbname)
+                    int slashIdx = rest.indexOf('/');
+                    String authority = (slashIdx != -1) ? rest.substring(0, slashIdx) : rest;
+                    String dbPath = (slashIdx != -1) ? rest.substring(slashIdx) : "";
+                    if (dbPath.isEmpty()) {
+                        dbPath = "/";
+                    }
+
+                    // Check if credentials are embedded in authority (user:pass@host:port)
+                    int atIdx = authority.lastIndexOf('@');
+                    String hostPort = authority;
+                    if (atIdx != -1) {
+                        String userInfo = authority.substring(0, atIdx);
+                        hostPort = authority.substring(atIdx + 1);
+
+                        int colonIdx = userInfo.indexOf(':');
+                        if (colonIdx != -1) {
+                            username = userInfo.substring(0, colonIdx);
+                            password = userInfo.substring(colonIdx + 1);
+                        } else {
+                            username = userInfo;
+                        }
+                    }
+
+                    // Default to port 5432 if no port is specified in hostPort
+                    if (!hostPort.contains(":")) {
+                        hostPort = hostPort + ":5432";
+                    }
+
+                    String cleanJdbcUrl = "jdbc:postgresql://" + hostPort + dbPath + query;
+                    config.setJdbcUrl(cleanJdbcUrl);
+                    config.setDriverClassName("org.postgresql.Driver");
+                    config.setUsername(username);
+                    config.setPassword(password);
+
+                    log.info("Configured PostgreSQL connection to host: {}, database: {}", hostPort, dbPath);
+                } catch (Exception e) {
+                    log.error("Failed to parse PostgreSQL URL: {}. Fallback to raw.", url, e);
+                    config.setJdbcUrl(url.startsWith("jdbc:") ? url : "jdbc:" + url);
+                    config.setDriverClassName("org.postgresql.Driver");
                     config.setUsername(username);
                     config.setPassword(password);
                 }
-                log.info("Configured PostgreSQL connection to host: {}, database: {}", host, path);
-            } catch (Exception e) {
-                log.error("Failed to parse PostgreSQL URL: {}. Using raw URL.", url, e);
+            } else {
                 config.setJdbcUrl(url);
+                if (url.contains("postgresql")) {
+                    config.setDriverClassName("org.postgresql.Driver");
+                }
                 config.setUsername(username);
                 config.setPassword(password);
             }
-        } else {
-            config.setJdbcUrl(url);
-            config.setUsername(username);
-            config.setPassword(password);
         }
 
         config.setMaximumPoolSize(maxPoolSize);
@@ -86,6 +127,6 @@ public class DataSourceConfig {
         config.setConnectionTimeout(20000);
         config.setMaxLifetime(1800000);
 
-        return new HikariDataSource(config);
+        return config;
     }
 }
