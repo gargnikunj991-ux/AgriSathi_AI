@@ -23,7 +23,7 @@ services:
       - key: JWT_SECRET
         sync: false
       - key: CORS_ALLOWED_ORIGINS
-        value: https://your-frontend-domain.vercel.app
+        value: "http://localhost:3000,http://localhost:5173,https://*.vercel.app,https://*.onrender.com,https://*.netlify.app"
       - key: PORT
         value: "8080"
       - key: LOG_LEVEL_APP
