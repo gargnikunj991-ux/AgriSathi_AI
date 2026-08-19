@@ -17,36 +17,36 @@ import java.util.List;
 @Configuration
 public class CorsConfig {
 
-    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173,http://localhost:8080}")
+    @Value("${app.cors.allowed-origins:http://localhost:3000,http://localhost:5173,http://localhost:8080,https://*.vercel.app,https://*.onrender.com,https://*.netlify.app}")
     private String allowedOrigins;
 
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         
-        List<String> origins = new ArrayList<>();
+        List<String> originPatterns = new ArrayList<>();
         if (allowedOrigins != null && !allowedOrigins.isBlank()) {
-            origins = Arrays.stream(allowedOrigins.split(","))
+            originPatterns = Arrays.stream(allowedOrigins.split(","))
                     .map(String::trim)
                     .filter(s -> !s.isEmpty())
                     .toList();
         }
-        if (origins.isEmpty()) {
-            origins = List.of("http://localhost:3000", "http://localhost:5173", "http://localhost:8080");
+        if (originPatterns.isEmpty()) {
+            originPatterns = List.of(
+                    "http://localhost:3000",
+                    "http://localhost:5173",
+                    "http://localhost:8080",
+                    "https://*.vercel.app",
+                    "https://*.onrender.com",
+                    "https://*.netlify.app"
+            );
         }
 
-        configuration.setAllowedOrigins(origins);
-        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList(
-                "Authorization",
-                "Content-Type",
-                "X-Requested-With",
-                "Accept",
-                "Origin",
-                "Access-Control-Request-Method",
-                "Access-Control-Request-Headers"
-        ));
-        configuration.setExposedHeaders(List.of("Authorization", "Link", "X-Total-Count"));
+        // Use setAllowedOriginPatterns instead of setAllowedOrigins to allow wildcards with allowCredentials(true)
+        configuration.setAllowedOriginPatterns(originPatterns);
+        configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS", "HEAD"));
+        configuration.setAllowedHeaders(List.of("*"));
+        configuration.setExposedHeaders(Arrays.asList("Authorization", "Link", "X-Total-Count", "Content-Disposition"));
         configuration.setAllowCredentials(true);
         configuration.setMaxAge(3600L);
 
@@ -55,3 +55,4 @@ public class CorsConfig {
         return source;
     }
 }
+
