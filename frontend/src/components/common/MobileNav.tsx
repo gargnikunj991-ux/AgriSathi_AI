@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils/cn';
 import { NAV_ITEMS } from './Sidebar';
 import { X, Sprout, LogOut } from 'lucide-react';
 import { Badge } from './Badge';
-import { authService } from '@/lib/api/auth.service';
+import { useAuth, getInitials } from '@/lib/context/AuthContext';
 
 export interface MobileNavProps {
   isOpen: boolean;
@@ -17,12 +17,20 @@ export interface MobileNavProps {
 export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose }) => {
   const pathname = usePathname();
   const router = useRouter();
+  const { user, profile, logout } = useAuth();
 
   const handleLogout = () => {
-    authService.logout();
+    logout();
     onClose();
     router.push('/login');
   };
+
+  const displayName = user?.name || 'AgriSathi User';
+  const displayLocation = profile?.district
+    ? `${profile.district}${profile.state ? `, ${profile.state}` : ''}`
+    : (user?.email || 'Active Session');
+  const roleDisplay = user?.role ? user.role.replace('ROLE_', '') : 'FARMER';
+  const initials = getInitials(user?.name);
 
   if (!isOpen) return null;
 
@@ -74,18 +82,27 @@ export const MobileNav: React.FC<MobileNavProps> = ({ isOpen, onClose }) => {
 
         <div className="p-4 border-t border-stone-100 bg-stone-50 space-y-3">
           <div className="flex items-center justify-between">
-            <div className="truncate">
-              <p className="text-xs font-semibold text-stone-900 truncate">Ramesh Kumar</p>
-              <p className="text-[11px] text-stone-500 truncate">Dehradun, UK</p>
+            <div className="flex items-center gap-2.5 overflow-hidden">
+              <div className="w-8 h-8 rounded-full bg-emerald-800 text-white flex items-center justify-center text-xs font-bold shrink-0">
+                {initials}
+              </div>
+              <div className="truncate">
+                <p className="text-xs font-semibold text-stone-900 truncate" title={displayName}>
+                  {displayName}
+                </p>
+                <p className="text-[11px] text-stone-500 truncate" title={displayLocation}>
+                  {displayLocation}
+                </p>
+              </div>
             </div>
             <Badge variant="success" size="sm">
-              FARMER
+              {roleDisplay}
             </Badge>
           </div>
 
           <button
             onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200/80 transition-colors"
+            className="w-full flex items-center justify-center gap-2 px-3 py-2 text-xs font-semibold text-red-700 bg-red-50 hover:bg-red-100 rounded-lg border border-red-200/80 transition-colors cursor-pointer"
           >
             <LogOut className="w-3.5 h-3.5" />
             Sign Out

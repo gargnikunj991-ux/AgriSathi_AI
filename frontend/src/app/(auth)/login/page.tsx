@@ -9,21 +9,33 @@ import { Input } from '@/components/common/Input';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent } from '@/components/common/Card';
 import { Badge } from '@/components/common/Badge';
 import { authService } from '@/lib/api/auth.service';
+import { useAuth } from '@/lib/context/AuthContext';
 import { UserRole } from '@/lib/types';
 
 export default function LoginPage() {
   const router = useRouter();
+  const { refreshUser } = useAuth();
   const [tab, setTab] = useState<'login' | 'register'>('login');
   const [role, setRole] = useState<UserRole>('FARMER');
 
   // Form states
-  const [name, setName] = useState('Ramesh Kumar');
-  const [email, setEmail] = useState('ramesh@agrisathi.com');
-  const [password, setPassword] = useState('Password@123');
-  const [phone, setPhone] = useState('9876543210');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [phone, setPhone] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
+
+  const fillDemoCredentials = (demoRole: 'FARMER' | 'BUYER') => {
+    if (demoRole === 'FARMER') {
+      setEmail('ramesh@agrisathi.com');
+      setPassword('Password@123');
+    } else {
+      setEmail('suresh@agrisathi.com');
+      setPassword('Password@123');
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,13 +47,14 @@ export default function LoginPage() {
       if (tab === 'login') {
         const res = await authService.login({ email, password });
         if (res.success) {
+          await refreshUser();
           setSuccessMsg('Login successful! Redirecting to dashboard...');
-          setTimeout(() => router.push('/dashboard'), 500);
+          setTimeout(() => router.push('/dashboard'), 300);
         }
       } else {
         const res = await authService.register({ name, email, password, phone, role });
         if (res.success) {
-          setSuccessMsg('Registration successful! You can now sign in.');
+          setSuccessMsg('Registration successful! You can now sign in with your credentials.');
           setTab('login');
         }
       }
@@ -214,10 +227,24 @@ export default function LoginPage() {
                 </Button>
               </form>
 
-              <div className="mt-4 pt-4 border-t border-stone-100 text-center">
-                <p className="text-xs text-stone-500">
-                  Demo credentials: <span className="font-medium text-stone-800">ramesh@agrisathi.com</span> / <span className="font-medium text-stone-800">Password@123</span>
-                </p>
+              <div className="mt-4 pt-4 border-t border-stone-100 text-center space-y-2">
+                <p className="text-xs text-stone-500">Demo Login Accounts:</p>
+                <div className="flex justify-center gap-2">
+                  <button
+                    type="button"
+                    onClick={() => fillDemoCredentials('FARMER')}
+                    className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-stone-100 hover:bg-emerald-50 hover:text-emerald-800 border border-stone-200 transition-colors cursor-pointer"
+                  >
+                    Farmer: ramesh@agrisathi.com
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => fillDemoCredentials('BUYER')}
+                    className="px-2.5 py-1 text-[11px] font-medium rounded-md bg-stone-100 hover:bg-blue-50 hover:text-blue-800 border border-stone-200 transition-colors cursor-pointer"
+                  >
+                    Buyer: suresh@agrisathi.com
+                  </button>
+                </div>
               </div>
             </CardContent>
           </Card>

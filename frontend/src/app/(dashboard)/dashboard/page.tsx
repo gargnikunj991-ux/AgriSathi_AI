@@ -24,9 +24,11 @@ import { cropService } from '@/lib/api/crop.service';
 import { weatherService } from '@/lib/api/weather.service';
 import { marketplaceService } from '@/lib/api/marketplace.service';
 import { schemeService } from '@/lib/api/scheme.service';
+import { useAuth } from '@/lib/context/AuthContext';
 import { Crop, WeatherCurrent, MarketplaceListing, GovernmentScheme } from '@/lib/types';
 
 export default function DashboardPage() {
+  const { user, profile } = useAuth();
   const [crops, setCrops] = useState<Crop[]>([]);
   const [weather, setWeather] = useState<WeatherCurrent | null>(null);
   const [listings, setListings] = useState<MarketplaceListing[]>([]);
@@ -65,18 +67,24 @@ export default function DashboardPage() {
 
   const activeCrops = crops.filter((c) => c.status === 'PLANTED');
 
+  const farmerName = user?.name || 'Farmer';
+  const roleName = user?.role ? user.role.replace('ROLE_', '') : 'FARMER';
+  const farmLocationText = profile?.district
+    ? `${profile.village ? `${profile.village}, ` : ''}${profile.district}, ${profile.state || 'India'}${profile.farmSize ? ` • ${profile.farmSize} Acres` : ''}${profile.soilType ? ` (${profile.soilType})` : ''}`
+    : `${user?.email || 'AgriSathi User'} • Farming Workspace`;
+
   return (
     <div className="space-y-6">
       {/* Farmer Welcome Banner */}
       <div className="bg-gradient-to-r from-emerald-800 to-emerald-900 text-white rounded-xl p-6 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="space-y-1">
           <div className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-700/80 text-amber-200 text-xs font-semibold">
-            Farmer Portal
+            {roleName} Portal
           </div>
-          <h2 className="text-2xl font-bold tracking-tight">Welcome back, Ramesh Kumar</h2>
+          <h2 className="text-2xl font-bold tracking-tight">Welcome back, {farmerName}</h2>
           <p className="text-emerald-100 text-xs sm:text-sm flex items-center gap-1.5 pt-0.5">
             <MapPin className="w-3.5 h-3.5 text-amber-300 shrink-0" />
-            Raipur, Dehradun, Uttarakhand • 2.5 Acres (Loamy Soil)
+            {farmLocationText}
           </p>
         </div>
 

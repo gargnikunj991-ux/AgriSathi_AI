@@ -11,11 +11,12 @@ import { ErrorState } from '@/components/common/ErrorState';
 import { User, MapPin, CheckCircle2, Save, LogOut } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { authService } from '@/lib/api/auth.service';
-import { FarmerProfile, User as UserType } from '@/lib/types';
+import { useAuth, getInitials } from '@/lib/context/AuthContext';
+import { FarmerProfile } from '@/lib/types';
 
 export default function ProfilePage() {
   const router = useRouter();
-  const [user, setUser] = useState<UserType | null>(null);
+  const { user, profile: contextProfile, logout, refreshUser } = useAuth();
   const [profile, setProfile] = useState<FarmerProfile | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -31,7 +32,7 @@ export default function ProfilePage() {
   const [mainCrop, setMainCrop] = useState('Basmati Rice');
 
   const handleLogout = () => {
-    authService.logout();
+    logout();
     router.push('/login');
   };
 
@@ -39,17 +40,9 @@ export default function ProfilePage() {
     setLoading(true);
     setError('');
     try {
-      const [userRes, profileRes] = await Promise.allSettled([
-        authService.getMe(),
-        authService.getProfile(),
-      ]);
-
-      if (userRes.status === 'fulfilled' && userRes.value.success) {
-        setUser(userRes.value.data);
-      }
-
-      if (profileRes.status === 'fulfilled' && profileRes.value?.success && profileRes.value?.data) {
-        const p = profileRes.value.data;
+      const profileRes = await authService.getProfile();
+      if (profileRes.success && profileRes.data) {
+        const p = profileRes.data;
         setProfile(p);
         if (p.state) setState(p.state);
         if (p.district) setDistrict(p.district);
@@ -58,8 +51,8 @@ export default function ProfilePage() {
         if (p.soilType) setSoilType(p.soilType);
         if (p.mainCrop) setMainCrop(p.mainCrop);
       }
-    } catch (err: unknown) {
-      setError((err as Error).message || 'Failed to load profile');
+    } catch {
+      // If profile is empty/404, fallback gracefully
     } finally {
       setLoading(false);
     }
@@ -78,12 +71,13 @@ export default function ProfilePage() {
         state,
         district,
         village,
-        farmSize: parseFloat(farmSize),
+        farmSize: parseFloat(farmSize) || 0,
         soilType,
         mainCrop,
       });
       if (res.success) {
         setProfile(res.data);
+        await refreshUser();
         setSuccessMsg('Profile updated successfully! Tailored advisories updated.');
         setTimeout(() => setSuccessMsg(''), 3000);
       }
@@ -97,6 +91,9 @@ export default function ProfilePage() {
   if (loading) return <LoadingState message="Loading profile information..." variant="skeleton" />;
   if (error) return <ErrorState message={error} onRetry={fetchProfile} />;
 
+  const initials = getInitials(user?.name);
+  const roleDisplay = user?.role ? user.role.replace('ROLE_', '') : 'FARMER';
+
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
       {/* Header */}
@@ -109,13 +106,13 @@ export default function ProfilePage() {
         </div>
         <div className="flex items-center gap-3">
           <Badge variant="success" size="md">
-            {user?.role || 'FARMER'}
+            {roleDisplay}
           </Badge>
           <Button
             variant="outline"
             size="sm"
             onClick={handleLogout}
-            className="text-red-700 border-red-200 hover:bg-red-50 hover:border-red-300"
+            className="text-red-700 border-red-200 hover:bg-red-50 hover:border-red-300 cursor-pointer"
             leftIcon={<LogOut className="w-4 h-4" />}
           >
             Sign Out
@@ -128,12 +125,12 @@ export default function ProfilePage() {
         <CardHeader className="pb-3">
           <div className="flex items-center gap-3">
             <div className="w-12 h-12 rounded-full bg-emerald-800 text-amber-300 flex items-center justify-center text-lg font-bold">
-              RK
+              {initials}
             </div>
             <div>
-              <CardTitle className="text-base">{user?.name || 'Ramesh Kumar'}</CardTitle>
+              <CardTitle className="text-base">{user?.name || 'AgriSathi User'}</CardTitle>
               <CardDescription className="text-xs">
-                {user?.email || 'ramesh@agrisathi.com'} • {user?.phone || '9876543210'}
+                {user?.email || 'No email registered'}{user?.phone ? ` • ${user.phone}` : ''}
               </CardDescription>
             </div>
           </div>

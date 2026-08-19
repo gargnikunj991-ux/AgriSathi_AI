@@ -24,6 +24,14 @@ export const authService = {
     const res = await apiClient.post<AuthTokenResponse>('/auth/login', req);
     if (res.success && res.data?.accessToken && typeof window !== 'undefined') {
       localStorage.setItem('agrisathi_token', res.data.accessToken);
+      try {
+        const meRes = await apiClient.get<User>('/auth/me');
+        if (meRes.success && meRes.data) {
+          localStorage.setItem('agrisathi_user', JSON.stringify(meRes.data));
+        }
+      } catch {
+        // me fetch fallback
+      }
     }
     return res;
   },
@@ -31,6 +39,18 @@ export const authService = {
   logout(): void {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('agrisathi_token');
+      localStorage.removeItem('agrisathi_user');
+    }
+  },
+
+  getStoredUser(): User | null {
+    if (typeof window === 'undefined') return null;
+    const cached = localStorage.getItem('agrisathi_user');
+    if (!cached) return null;
+    try {
+      return JSON.parse(cached);
+    } catch {
+      return null;
     }
   },
 
